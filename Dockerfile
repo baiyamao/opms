@@ -1,5 +1,5 @@
 # Set the base image
-FROM baiyamao/nclp:1.0
+FROM baiyamao/ncpl:1.0
 
 COPY . $WORKDIR
 
