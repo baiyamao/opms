@@ -25,4 +25,5 @@ Route::controller(AuthController::class)->group(function () {
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::middleware('auth:sanctum')->post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
+//Route::middleware('auth:sanctum')->post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
+Route::post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
