@@ -6,6 +6,7 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {ref} from "vue";
 import axios from "axios";
+import DigitsInput from "@/Components/DigitsInput.vue";
 
 const growthData = ref({
     birthday:'2021-1-1',
@@ -40,6 +41,7 @@ const submit = async () => {
         </template>
 
         <form @submit.prevent="submit" class="items-center flex flex-col pt-2">
+            <DigitsInput></DigitsInput>
             <div>
                 <InputLabel for="birthday" value="出生日期" />
 
