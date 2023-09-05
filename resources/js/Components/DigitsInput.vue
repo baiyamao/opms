@@ -73,6 +73,16 @@ const handlePaste = (event: ClipboardEvent) => {
         inputDigits.value[i] = sanitizedText[i] || '';
     }
 };
+
+//切换输入框自动全选
+// 使用 setTimeout 函数（即使延迟时间为0毫秒）将 select 调用移到JavaScript事件循环的末尾。这确保了 select 调用在浏览器完成焦点操作之后执行，从而全选输入框内容。
+const handleFocus = (event: FocusEvent) => {
+    const inputElement = event.target as HTMLInputElement;
+    setTimeout(() => {
+        inputElement.select();
+    }, 0);
+};
+
 </script>
 
 <template>
@@ -84,6 +94,7 @@ const handlePaste = (event: ClipboardEvent) => {
             @input="handleInput(index, $event)"
             @keydown="handleKeydown(index, $event)"
             @paste="handlePaste($event)"
+            @focus="handleFocus($event)"
             maxlength="1"
             ref="inputsRef"
             class="px-0"
