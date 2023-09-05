@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-
+let lastKey: string | null = null;
 //使用ref保存所有输入框
 const inputsRef = ref([]);
 const digitsCount = 8;
@@ -61,6 +61,12 @@ const handleKeydown = (index: number, event: KeyboardEvent) => {
             }
         }
     }
+    // 如果按下的键是数字并且和上次按下的键相同，阻止输入
+    if (event.key >= "0" && event.key <= "9" && lastKey === event.key) {
+        event.preventDefault();
+    } else if (event.key >= "0" && event.key <= "9") {
+        lastKey = event.key;
+    }
 };
 
 
@@ -71,6 +77,13 @@ const handlePaste = (event: ClipboardEvent) => {
 
     for (let i = 0; i < digitsCount; i++) {
         inputDigits.value[i] = sanitizedText[i] || '';
+    }
+};
+
+const handleKeyup = (event: KeyboardEvent) => {
+    // 当键释放时，重置lastKey
+    if (event.key === lastKey) {
+        lastKey = null;
     }
 };
 
@@ -93,6 +106,7 @@ const handleFocus = (event: FocusEvent) => {
             v-model="inputDigits[index]"
             @input="handleInput(index, $event)"
             @keydown="handleKeydown(index, $event)"
+            @keyup="handleKeyup($event)"
             @paste="handlePaste($event)"
             @focus="handleFocus($event)"
             maxlength="1"
