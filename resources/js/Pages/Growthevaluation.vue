@@ -9,6 +9,7 @@ import axios from "axios";
 import RadioGroup from "@/Components/RadioGroup.vue";
 import LoadingSpinner from "@/Components/LoadingSpinner.vue"
 import DangerButton from "@/Components/DangerButton.vue";
+import GrowthStandardsTable from "@/Components/GrowthStandardsTable.vue";
 
 const growthData = ref({
     birthday:'',
@@ -28,6 +29,7 @@ const resetForm=()=>{
     };
     responseData.value=null;
     loading.value=false;
+    hasError.value=false;
 
 }
 
@@ -43,6 +45,7 @@ const loadExample=()=>{
 }
 
 const loading =ref(false);
+const hasError =ref(false);
 const message =ref(null);
 
 //根据生日计算月龄
@@ -81,6 +84,8 @@ const submit = async () => {
             // 在这里可以处理成功提交的响应数据
         } catch (error) {
             console.error('Error submitting data:', error);
+            loading.value=false;
+            hasError.value=true;
             message.value="数据有误，评价失败，请核对数据。";
             // 在这里可以处理请求失败的情况
         }
@@ -89,12 +94,15 @@ const submit = async () => {
 </script>
 
 <template>
-    <Head title="生长发育评估" />
+    <Head title="生长发育评估工具 beta" />
 
     <AuthenticatedLayout>
         <template #header>
             <div
-                class="font-semibold text-xl text-center text-gray-800 dark:text-gray-200 leading-tight">生长发育评估</div>
+                class="font-semibold text-xl text-center text-gray-800 dark:text-gray-200 leading-tight">生长发育评估工具 beta</div>
+            <div class="flex justify-between text-gray-400 text-sm mt-2">
+                <span>评价数据标准来源：WHO Child Growth Standards</span><span>作者：baiyamao</span>
+            </div>
         </template>
         <form @submit.prevent="submit" class="items-center flex flex-col pt-2">
             <a href="#" class="text-sm text-gray-500 flex underline" @click="loadExample">加载示例数据</a>
@@ -166,9 +174,9 @@ const submit = async () => {
 
 
         </form>
-        <div v-if="loading" class="absolute grid-cols-1 grid w-full justify-items-center py-1">
-            <LoadingSpinner></LoadingSpinner>
-            <span class="text-red-600">{{message}}</span>
+        <div class="absolute grid-cols-1 grid w-full justify-items-center py-1">
+            <LoadingSpinner v-if="loading"></LoadingSpinner>
+            <span v-if="hasError" class="text-red-600">{{message}}</span>
         </div>
         <div v-if="responseData" class="flex flex-col items-center mt-10">
             <div class="text-xl">生长发育评价结果</div>
@@ -181,6 +189,7 @@ const submit = async () => {
             <div class="mt-2">
                 体重评价：{{responseData.weight_evaluation}}
             </div>
+            <GrowthStandardsTable :data="responseData.standards" v-if="responseData" />
         </div>
 
 

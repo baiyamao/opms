@@ -97,7 +97,7 @@ class GrowthEvaluationController extends Controller
             $height_evaluation="下";
         }elseif($height<$standards->height_minus_1sd){
             $height_evaluation="中下";
-        }elseif($height<$standards->height_minus_0sd){
+        }elseif($height<$standards->height_0sd){
             $height_evaluation="中-";
         }elseif($height<$standards->height_plus_1sd){
             $height_evaluation="中+";
@@ -114,7 +114,7 @@ class GrowthEvaluationController extends Controller
                 $weight_evaluation="下";
             }elseif($weight<$standards->weight_minus_1sd){
                 $weight_evaluation="中下";
-            }elseif($weight<$standards->weight_minus_0sd){
+            }elseif($weight<$standards->weight_0sd){
                 $weight_evaluation="中-";
             }elseif($weight<$standards->weight_plus_1sd){
                 $weight_evaluation="中+";
