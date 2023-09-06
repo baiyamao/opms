@@ -168,7 +168,7 @@ const submit = async () => {
         </form>
         <div v-if="loading" class="absolute grid-cols-1 grid w-full justify-items-center py-1">
             <LoadingSpinner></LoadingSpinner>
-            <span>{{message}}</span>
+            <span class="text-red-600">{{message}}</span>
         </div>
         <div v-if="responseData" class="flex flex-col items-center mt-10">
             <div class="text-xl">生长发育评价结果</div>

@@ -31,7 +31,7 @@ Route::get('/dashboard', function () {
 
 Route::get('/growthevaluation', function () {
     return Inertia::render('Growthevaluation');
-})->middleware(['auth', 'verified'])->name('growthevaluation');
+})->name('growthevaluation');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
