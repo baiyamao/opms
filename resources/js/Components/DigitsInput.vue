@@ -7,12 +7,13 @@ const digitsCount = 8;
 const digitsArray = computed(() => Array.from({ length: digitsCount }, (_, i) => i));
 const inputDigits = ref<string[]>(Array(digitsCount).fill(''));
 
-const handleInput = (index: number, event: InputEvent) => {
+const handleInput = (index: number, event: Event) => {
+    const inputEvent = event as InputEvent;
     //替换非数字为空白
     inputDigits.value[index] = inputDigits.value[index].replace(/[^0-9]/g, "");
     const nextIndex = index + 1;
-    if (nextIndex < digitsCount && event.data) {
-        const nextInput = inputsRef.value[nextIndex];
+    if (nextIndex < digitsCount && (event as InputEvent).data) {
+        const nextInput = inputsRef.value[nextIndex] as HTMLInputElement;
         if (nextInput) {
             nextInput.focus();
         }
@@ -35,7 +36,7 @@ const handleKeydown = (index: number, event: KeyboardEvent) => {
     if (event.key === "Backspace" && inputDigits.value[index] == "") {
         const prevIndex = index - 1;
         if (prevIndex >= 0) {
-            const prevInput = inputsRef.value[prevIndex];
+            const prevInput = inputsRef.value[prevIndex] as HTMLInputElement;
             if (prevInput) {
                 prevInput.focus();
             }
@@ -45,7 +46,7 @@ const handleKeydown = (index: number, event: KeyboardEvent) => {
     if(event.key === "ArrowLeft"){
         const prevIndex = index - 1;
         if (prevIndex >= 0) {
-            const prevInput = inputsRef.value[prevIndex];
+            const prevInput = inputsRef.value[prevIndex] as HTMLInputElement;
             if (prevInput) {
                 prevInput.focus();
             }
@@ -55,7 +56,7 @@ const handleKeydown = (index: number, event: KeyboardEvent) => {
     if(event.key === "ArrowRight"){
         const nextIndex = index + 1;
         if (nextIndex < digitsCount) {
-            const nextInput = inputsRef.value[nextIndex];
+            const nextInput = inputsRef.value[nextIndex] as HTMLInputElement;
             if (nextInput) {
                 nextInput.focus();
             }

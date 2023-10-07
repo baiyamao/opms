@@ -16,13 +16,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, watch } from 'vue';
+
+interface OptionItem {
+    value: string;
+    label: string;
+}
 
 const props = defineProps({
     id: String,
     modelValue: String,
-    options: Array,
-    isDisabled:Boolean,
+    options: Array as () => OptionItem[],
+    isDisabled: Boolean,
 });
 
 const emits = defineEmits(["update:modelValue"]);

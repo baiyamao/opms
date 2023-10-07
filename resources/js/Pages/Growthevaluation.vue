@@ -11,6 +11,22 @@ import LoadingSpinner from "@/Components/LoadingSpinner.vue"
 import DangerButton from "@/Components/DangerButton.vue";
 import GrowthStandardsTable from "@/Components/GrowthStandardsTable.vue";
 
+type ResponseDataType = {
+    age_in_months?: number;
+    nutrition_weight_evaluation?: string;
+    nutrition_height_evaluation?: string;
+    nutrition_height_weight_evaluation?: string;
+    standards?: {
+        height_type: string;
+    };
+    height_weight_evaluation?: string;
+    weight_evaluation?: string;
+    height_evaluation?: string;
+    height_weight_standards?: any;
+    // Add other fields here if necessary
+};
+
+
 const growthData = ref({
     birthday:'',
     gender:'',
@@ -46,7 +62,7 @@ const loadExample=()=>{
 
 const loading =ref(false);
 const hasError =ref(false);
-const message =ref(null);
+const message =ref<string | null>(null);
 
 //根据生日计算月龄
 const calculateAgeInMonths = (birthdayStr: string): number => {
@@ -88,7 +104,7 @@ const heightOptions = [
     {label: '身高', value: 'height'},
 ];
 
-const responseData = ref(null);
+const responseData = ref<ResponseDataType | null>(null);
 
 const submit = async () => {
     loading.value=true;
@@ -203,13 +219,13 @@ const submit = async () => {
                 营养评价：{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_weight_evaluation)?" "+responseData.nutrition_height_weight_evaluation:"")}}
             </div>
             <div class="mt-2">
-                {{(responseData.standards.height_type==="length")?"身长别体重":"身高别体重"}}评价：{{responseData.height_weight_evaluation}}
+                {{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}评价：{{responseData.height_weight_evaluation}}
             </div>
             <div class="mt-2">
                 体重评价：{{responseData.weight_evaluation}}
             </div>
             <div class="mt-2">
-                {{(responseData.standards.height_type==="length")?"身长":"身高"}}评价：{{responseData.height_evaluation}}
+                {{(responseData.standards?.height_type==="length")?"身长":"身高"}}评价：{{responseData.height_evaluation}}
             </div>
             <GrowthStandardsTable :data="responseData.standards" :height-weight-data="responseData.height_weight_standards" v-if="responseData"
                                   class="mt-2"/>
