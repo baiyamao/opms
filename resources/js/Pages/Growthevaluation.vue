@@ -35,9 +35,9 @@ const resetForm=()=>{
 
 const loadExample=()=>{
     growthData.value={
-        birthday:'20200303',
+        birthday:'2020-3-3',
         gender:'boy',
-        height_type:'height',
+        height_type:'',
         height:'100',
         weight:'25'
     };
@@ -57,11 +57,26 @@ const calculateAgeInMonths = (birthdayStr: string): number => {
     months = (today.getFullYear() - birthDate.getFullYear()) * 12;
     months -= birthDate.getMonth();
     months += today.getMonth();
-
     return months <= 0 ? 0 : months;
+
+};
+//根据月龄判断身长和身高
+const judgeHeightType =(ageInMonths:number):string=>{
+  if (ageInMonths<24){
+      growthData.value.height_type="length";
+      return "length";
+  }else if(ageInMonths>24){
+      growthData.value.height_type="height";
+      return "height";
+  }else{
+      growthData.value.height_type="";
+      return "";
+  }
 };
 
 const ageInMonths = computed(() => calculateAgeInMonths(growthData.value.birthday));
+const heightType = computed(() => judgeHeightType(calculateAgeInMonths(growthData.value.birthday)));
+
 
 const genderOptions = [
     {label: '男', value: 'boy'},
@@ -77,6 +92,7 @@ const responseData = ref(null);
 
 const submit = async () => {
     loading.value=true;
+    hasError.value=false;
         try {
             const response = await axios.post('/api/evaluate-growth', growthData.value);
             responseData.value = response.data
@@ -101,7 +117,7 @@ const submit = async () => {
             <div
                 class="font-semibold text-xl text-center text-gray-800 dark:text-gray-200 leading-tight">生长发育评估工具 beta</div>
             <div class="flex justify-between text-gray-400 text-sm mt-2">
-                <span>评价数据标准来源：WHO Child Growth Standards</span><span>作者：baiyamao</span>
+                <span>评价数据标准来源：WHO Child Growth Standards (2006)</span><span>作者：baiyamao</span>
             </div>
         </template>
         <form @submit.prevent="submit" class="items-center flex flex-col pt-2">
@@ -127,36 +143,36 @@ const submit = async () => {
                     />
                 </div>
 
-                <div v-if="ageInMonths==24">
-                    <InputLabel  value="身高类别" />
+                <div>
+                    <InputLabel  value="身高类别(24月龄需要)" />
                     <RadioGroup
                         id="height_type"
                         v-model="growthData.height_type"
                         :options="heightOptions"
-                        class="mt-3"
+                        class="mt-3 disabled:opacity-25"
+                        :is-disabled="heightType!==''"
                     />
                 </div>
-                <div v-else>
 
-                </div>
                 <div>
-                    <InputLabel for="height" value="身高/身长 (厘米/cm)" />
-
-                    <TextInput
-                        id="height"
-                        type="text"
-                        class="mt-1 block w-full"
-                        v-model="growthData.height"
-                    />
-                </div>
-                <div>
-                    <InputLabel for="weight" value="体重 (千克/Kg)" />
+                    <InputLabel for="weight" value="体重(千克/Kg)" />
 
                     <TextInput
                         id="weight"
                         type="text"
                         class="mt-1 block w-full"
                         v-model="growthData.weight"
+                    />
+                </div>
+                <div>
+                    <InputLabel for="height"
+                                :value="growthData.height_type=='height'?'身高(厘米/cm)':'身长(厘米/cm)'" />
+
+                    <TextInput
+                        id="height"
+                        type="text"
+                        class="mt-1 block w-full"
+                        v-model="growthData.height"
                     />
                 </div>
 
@@ -184,12 +200,19 @@ const submit = async () => {
                 月龄：{{responseData.age_in_months}}个月
             </div>
             <div class="mt-2">
-                身高/身长评价：{{responseData.height_evaluation}}
+                营养评价：{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_weight_evaluation)?" "+responseData.nutrition_height_weight_evaluation:"")}}
+            </div>
+            <div class="mt-2">
+                {{(responseData.standards.height_type==="length")?"身长别体重":"身高别体重"}}评价：{{responseData.height_weight_evaluation}}
             </div>
             <div class="mt-2">
                 体重评价：{{responseData.weight_evaluation}}
             </div>
-            <GrowthStandardsTable :data="responseData.standards" v-if="responseData" />
+            <div class="mt-2">
+                {{(responseData.standards.height_type==="length")?"身长":"身高"}}评价：{{responseData.height_evaluation}}
+            </div>
+            <GrowthStandardsTable :data="responseData.standards" :height-weight-data="responseData.height_weight_standards" v-if="responseData"
+                                  class="mt-2"/>
         </div>
 
 

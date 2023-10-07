@@ -7,6 +7,8 @@
                         type="radio"
                         :value="item.value"
                         v-model="internalValue"
+                        :disabled="isDisabled"
+                        class="disabled:opacity-25"
                     />
                     <span class="pl-1">{{ item.label }}</span>
             </div>
@@ -20,6 +22,7 @@ const props = defineProps({
     id: String,
     modelValue: String,
     options: Array,
+    isDisabled:Boolean,
 });
 
 const emits = defineEmits(["update:modelValue"]);
