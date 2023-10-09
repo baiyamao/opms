@@ -51,7 +51,7 @@ const resetForm=()=>{
 
 const loadExample=()=>{
     growthData.value={
-        birthday:'2020-3-3',
+        birthday:'2020-03-03',
         gender:'boy',
         height_type:'',
         height:'100',
@@ -64,10 +64,27 @@ const loading =ref(false);
 const hasError =ref(false);
 const message =ref<string | null>(null);
 
+//格式化日期
+const normalizeDateStr = (dateStr: string): string => {
+    // 使用正则表达式匹配上述提到的多种日期格式
+    const match = dateStr.match(/^(\d{4})[-/.]?(\d{1,2})[-/.]?(\d{1,2})$/);
+
+    if (!match) {
+        // throw new Error('Invalid date format');
+        return dateStr;
+    }
+
+    const year = match[1];
+    const month = match[2].padStart(2, '0');  // Ensure month is 2 digits
+    const day = match[3].padStart(2, '0');    // Ensure day is 2 digits
+
+    return `${year}-${month}-${day}`;
+};
+
 //根据生日计算月龄
 const calculateAgeInMonths = (birthdayStr: string): number => {
     const today = new Date();
-    const birthDate = new Date(birthdayStr);
+    const birthDate = new Date(normalizeDateStr(birthdayStr));
 
     let months;
     months = (today.getFullYear() - birthDate.getFullYear()) * 12;
@@ -109,6 +126,7 @@ const responseData = ref<ResponseDataType | null>(null);
 const submit = async () => {
     loading.value=true;
     hasError.value=false;
+    growthData.value.birthday=normalizeDateStr(growthData.value.birthday);
         try {
             const response = await axios.post('/api/evaluate-growth', growthData.value);
             responseData.value = response.data
