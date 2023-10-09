@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
 
-        Schema::create('boy_who_height_weight', function (Blueprint $table) {
+        Schema::create('boy_who_height_weights', function (Blueprint $table) {
             $table->id();
             $table->decimal('height', 10, 2)->nullable();
             $table->decimal('weight_minus_3sd', 10, 2)->nullable();
