@@ -133,7 +133,7 @@ const submit = async () => {
     growthData.value.birthday=normalizeDateStr(growthData.value.birthday);
         try {
             const response = await axios.post('/api/evaluate-growth', growthData.value);
-            responseData.value = response.data
+            responseData.value = response.data;
             loading.value=false;
             // 在这里可以处理成功提交的响应数据
         } catch (error) {
@@ -239,7 +239,7 @@ const submit = async () => {
                 <tbody>
                 <tr class="border-b">
                     <td class="p-2 font-bold">年龄</td>
-                    <td class="p-2">{{Math.floor(responseData.age_in_months / 12)}}岁{{responseData.age_in_months%12}}个月</td>
+                    <td class="p-2">{{Math.floor((responseData?.age_in_months || 0) / 12)}}岁{{(responseData?.age_in_months || 0)%12}}个月</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">体重评价</td>
