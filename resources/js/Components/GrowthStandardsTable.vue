@@ -36,7 +36,7 @@ const props = defineProps({
 const tableRows = computed(() => {
     return [
         {
-            label: props.heightWeightData?props.heightWeightData.height+"别体重kg":"别体重无数据",
+            label: props.heightWeightData?props.heightWeightData.height+"别体重kg":"别体重kg",
             values: [
                 props.heightWeightData?props.heightWeightData.weight_minus_3sd:"",
                 props.heightWeightData?props.heightWeightData.weight_minus_2sd:"",

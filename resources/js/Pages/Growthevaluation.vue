@@ -238,24 +238,23 @@ const submit = async () => {
             <table class="text-sm bg-white border rounded overflow-hidden">
                 <tbody>
                 <tr class="border-b">
-                    <td class="p-2 font-bold">月龄</td>
-                    <td class="p-2">{{responseData.age_in_months}}个月</td>
+                    <td class="p-2 font-bold">年龄</td>
+                    <td class="p-2">{{Math.floor(responseData.age_in_months / 12)}}岁{{responseData.age_in_months%12}}个月</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">体重评价</td>
                     <td class="p-2">{{responseData.weight_evaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition_weight_evaluation}}</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长":"身高"}}评价</td>
                     <td class="p-2">{{responseData.height_evaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition_height_evaluation}}</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}评价</td>
                     <td class="p-2">{{responseData.height_weight_evaluation}}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}营养评价</td>
-                    <td class="p-2">{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_weight_evaluation)?" "+responseData.nutrition_height_weight_evaluation:"")}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition_height_weight_evaluation}}</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">BMI</td>
@@ -264,10 +263,7 @@ const submit = async () => {
                 <tr class="border-b">
                     <td class="p-2 font-bold">BMI评价</td>
                     <td class="p-2">{{responseData.bmi_evaluation}}</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="p-2 font-bold">BMI营养评价</td>
-                    <td class="p-2">{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_bmi_evaluation)?" "+responseData.nutrition_bmi_evaluation:"")}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition_bmi_evaluation}}</td>
                 </tr>
                 </tbody>
             </table>

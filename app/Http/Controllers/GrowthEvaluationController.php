@@ -137,9 +137,6 @@ class GrowthEvaluationController extends Controller
             case null:
                 $nutrition['nutrition_height_weight_evaluation'] = null;
                 break;
-            default:
-                $nutrition['nutrition_height_weight_evaluation'] = "正常";
-                break;
         }
 
         switch ($BMI_evaluation) {
@@ -157,9 +154,6 @@ class GrowthEvaluationController extends Controller
                 break;
             case "下下":
                 $nutrition['nutrition_bmi_evaluation'] = "重度消瘦";
-                break;
-            default:
-                $nutrition['nutrition_bmi_evaluation'] = "正常";
                 break;
         }
 
