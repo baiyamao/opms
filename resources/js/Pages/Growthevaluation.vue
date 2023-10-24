@@ -23,6 +23,10 @@ type ResponseDataType = {
     weight_evaluation?: string;
     height_evaluation?: string;
     height_weight_standards?: any;
+    bmi?:string;
+    bmi_evaluation?: string;
+    nutrition_bmi_evaluation?: string;
+
     // Add other fields here if necessary
 };
 
@@ -263,7 +267,7 @@ const submit = async () => {
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">BMI营养评价</td>
-                    <td class="p-2">{{((responseData.nutrition_bmi_evaluation)?responseData.nutrition_bmi_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_bmi_evaluation)?" "+responseData.nutrition_height_bmi_evaluation:"")}}</td>
+                    <td class="p-2">{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_bmi_evaluation)?" "+responseData.nutrition_bmi_evaluation:"")}}</td>
                 </tr>
                 </tbody>
             </table>
