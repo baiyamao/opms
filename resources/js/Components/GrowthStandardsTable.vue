@@ -36,15 +36,15 @@ const props = defineProps({
 const tableRows = computed(() => {
     return [
         {
-            label: (props.data.height_type==="length")?"身长别体重kg":"身高别体重kg",
+            label: props.heightWeightData?props.heightWeightData.height+"别体重kg":"别体重无数据",
             values: [
-                props.heightWeightData.weight_minus_3sd,
-                props.heightWeightData.weight_minus_2sd,
-                props.heightWeightData.weight_minus_1sd,
-                props.heightWeightData.weight_0sd,
-                props.heightWeightData.weight_plus_1sd,
-                props.heightWeightData.weight_plus_2sd,
-                props.heightWeightData.weight_plus_3sd
+                props.heightWeightData?props.heightWeightData.weight_minus_3sd:"",
+                props.heightWeightData?props.heightWeightData.weight_minus_2sd:"",
+                props.heightWeightData?props.heightWeightData.weight_minus_1sd:"",
+                props.heightWeightData?props.heightWeightData.weight_0sd:"",
+                props.heightWeightData?props.heightWeightData.weight_plus_1sd:"",
+                props.heightWeightData?props.heightWeightData.weight_plus_2sd:"",
+                props.heightWeightData?props.heightWeightData.weight_plus_3sd:""
             ]
         },
         {

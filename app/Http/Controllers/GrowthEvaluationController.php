@@ -34,12 +34,13 @@ class GrowthEvaluationController extends Controller
         $heightWeightStandards = $this->getHeightWeightStandards($gender, $ageInMonths, $heightType, $standardHeight);
 
         if (!$standards) {
-            return response()->json(['error' => 'No standards found for the given age.'], 404);
+            return response()->json(['error' => '月龄超过发育标准数据范围！'], 404);
         }
 
-        if (!$heightWeightStandards) {
-            return response()->json(['error' => 'No standards found for the given standard height.'], 404);
-        }
+
+//        if (!$heightWeightStandards) {
+//            return response()->json(['error' => '提供的身长身高值超出发育标准数据范围！'], 404);
+//        }
 
         // 根据标准数据评估生长发育水平
         $evaluation = $this->evaluateGrowth($ageInMonths, $height, $weight, $standards,$heightWeightStandards);
@@ -88,7 +89,14 @@ class GrowthEvaluationController extends Controller
         $weight_evaluation = ($standards->weight_0sd == null) ? null : $this->evaluateMeasurement($weight, $standards->weight_minus_3sd,$standards->weight_minus_2sd, $standards->weight_minus_1sd, $standards->weight_0sd, $standards->weight_plus_1sd, $standards->weight_plus_2sd,$standards->weight_plus_3sd);
 
         //身高别体重评价
-        $height_weight_evaluation = $this->evaluateMeasurement($weight,$heightWeightStandards->weight_minus_3sd,$heightWeightStandards->weight_minus_2sd, $heightWeightStandards->weight_minus_1sd, $heightWeightStandards->weight_0sd, $heightWeightStandards->weight_plus_1sd, $heightWeightStandards->weight_plus_2sd,$heightWeightStandards->weight_plus_3sd);
+        if($heightWeightStandards){
+            $height_weight_evaluation = $this->evaluateMeasurement($weight,$heightWeightStandards->weight_minus_3sd,$heightWeightStandards->weight_minus_2sd, $heightWeightStandards->weight_minus_1sd, $heightWeightStandards->weight_0sd, $heightWeightStandards->weight_plus_1sd, $heightWeightStandards->weight_plus_2sd,$heightWeightStandards->weight_plus_3sd);
+        }else{
+            $height_weight_evaluation =null;
+        }
+
+        $BMI=$this->calculateBMI($weight,$height);
+        $BMI_evaluation = $this->evaluateMeasurement($BMI,$standards->bmi_minus_3sd,$standards->bmi_minus_2sd, $standards->bmi_minus_1sd, $standards->bmi_0sd, $standards->bmi_plus_1sd, $standards->bmi_plus_2sd,$standards->bmi_plus_3sd);
 
         $nutrition = [];
 
@@ -126,6 +134,33 @@ class GrowthEvaluationController extends Controller
             case "下下":
                 $nutrition['nutrition_height_weight_evaluation'] = "重度消瘦";
                 break;
+            case null:
+                $nutrition['nutrition_height_weight_evaluation'] = null;
+                break;
+            default:
+                $nutrition['nutrition_height_weight_evaluation'] = "正常";
+                break;
+        }
+
+        switch ($BMI_evaluation) {
+            case "上上":
+                $nutrition['nutrition_bmi_evaluation'] = "重度肥胖";
+                break;
+            case "上":
+                $nutrition['nutrition_bmi_evaluation'] = "肥胖";
+                break;
+            case "中上":
+                $nutrition['nutrition_bmi_evaluation'] = "超重";
+                break;
+            case "下":
+                $nutrition['nutrition_bmi_evaluation'] = "消瘦";
+                break;
+            case "下下":
+                $nutrition['nutrition_bmi_evaluation'] = "重度消瘦";
+                break;
+            default:
+                $nutrition['nutrition_bmi_evaluation'] = "正常";
+                break;
         }
 
 
@@ -139,6 +174,8 @@ class GrowthEvaluationController extends Controller
             'standards' => $standards,
             'height_weight_evaluation' => $height_weight_evaluation,
             'height_weight_standards' => $heightWeightStandards,
+            'bmi' => $BMI,
+            'bmi_evaluation' =>$BMI_evaluation,
         ]+$nutrition;
     }
 
@@ -202,13 +239,13 @@ class GrowthEvaluationController extends Controller
         }
     }
 
+    private function calculateBMI($weight,$height):float
+    {
+        if($weight&&$height){
+            $BMI=$weight/(($height*0.01)**2);
+            return round($BMI, 2);
+        }
+        return 0.00;
+    }
+
 }
-//这里的改进包括：
-//
-//使用数据验证：通过使用validate方法来验证请求数据，确保数据的有效性和完整性，减少了手动检查的工作。
-//
-//将模型选择逻辑提取到单独的函数中，减少了重复的条件检查。
-//
-//使用更简洁的方式来评估身高和体重，避免了重复的代码。
-//
-//增加了注释来提高代码的可读性。

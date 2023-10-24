@@ -62,7 +62,7 @@ const loadExample=()=>{
 
 const loading =ref(false);
 const hasError =ref(false);
-const message =ref<string | null>(null);
+const errorMessage =ref<string | null>(null);
 
 //格式化日期
 const normalizeDateStr = (dateStr: string): string => {
@@ -136,7 +136,7 @@ const submit = async () => {
             console.error('Error submitting data:', error);
             loading.value=false;
             hasError.value=true;
-            message.value="数据有误，评价失败，请核对数据。";
+            errorMessage.value=error.response.data.error;
             // 在这里可以处理请求失败的情况
         }
 
@@ -217,34 +217,56 @@ const submit = async () => {
                         评估
                     </PrimaryButton>
                     <DangerButton type="button" class="ml-4" @click="resetForm">
-                        重置
+                        清空
                     </DangerButton>
                 </div>
             </div>
 
 
         </form>
-        <div class="absolute grid-cols-1 grid w-full justify-items-center py-1">
+        <div class="absolute grid-cols-1 grid w-full justify-items-center py-2">
             <LoadingSpinner v-if="loading"></LoadingSpinner>
-            <span v-if="hasError" class="text-red-600">{{message}}</span>
+            <span v-if="hasError" class="text-red-600">{{errorMessage}}</span>
+            <span v-if="responseData && !responseData.height_weight_standards" class="text-blue-600">注意：提供的身长身高值超出身高别体重数据范围！</span>
         </div>
-        <div v-if="responseData" class="flex flex-col items-center mt-10">
-            <div class="text-xl">生长发育评价结果</div>
-            <div class="mt-2">
-                月龄：{{responseData.age_in_months}}个月
-            </div>
-            <div class="mt-2">
-                营养评价：{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_weight_evaluation)?" "+responseData.nutrition_height_weight_evaluation:"")}}
-            </div>
-            <div class="mt-2">
-                {{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}评价：{{responseData.height_weight_evaluation}}
-            </div>
-            <div class="mt-2">
-                体重评价：{{responseData.weight_evaluation}}
-            </div>
-            <div class="mt-2">
-                {{(responseData.standards?.height_type==="length")?"身长":"身高"}}评价：{{responseData.height_evaluation}}
-            </div>
+        <div v-if="responseData" class="flex flex-col items-center mt-10 p-5 border rounded-lg shadow-md bg-white">
+            <div class="text-2xl font-semibold mb-4">生长发育评价结果</div>
+            <table class="text-sm bg-white border rounded overflow-hidden">
+                <tbody>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">月龄</td>
+                    <td class="p-2">{{responseData.age_in_months}}个月</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">体重评价</td>
+                    <td class="p-2">{{responseData.weight_evaluation}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长":"身高"}}评价</td>
+                    <td class="p-2">{{responseData.height_evaluation}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}评价</td>
+                    <td class="p-2">{{responseData.height_weight_evaluation}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}营养评价</td>
+                    <td class="p-2">{{((responseData.nutrition_weight_evaluation)?responseData.nutrition_weight_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_weight_evaluation)?" "+responseData.nutrition_height_weight_evaluation:"")}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">BMI</td>
+                    <td class="p-2">{{responseData.bmi}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">BMI评价</td>
+                    <td class="p-2">{{responseData.bmi_evaluation}}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-2 font-bold">BMI营养评价</td>
+                    <td class="p-2">{{((responseData.nutrition_bmi_evaluation)?responseData.nutrition_bmi_evaluation:"")}}{{((responseData.nutrition_height_evaluation)?" "+responseData.nutrition_height_evaluation:"")}}{{((responseData.nutrition_height_bmi_evaluation)?" "+responseData.nutrition_height_bmi_evaluation:"")}}</td>
+                </tr>
+                </tbody>
+            </table>
             <GrowthStandardsTable :data="responseData.standards" :height-weight-data="responseData.height_weight_standards" v-if="responseData"
                                   class="mt-2"/>
         </div>
