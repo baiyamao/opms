@@ -140,7 +140,7 @@ const submit = async () => {
             console.error('Error submitting data:', error);
             loading.value=false;
             hasError.value=true;
-            message.value=error.response.data.error;
+            message.value=(error as any).response.data.error;
             // 在这里可以处理请求失败的情况
         }
 
