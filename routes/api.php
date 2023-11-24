@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SystemAccountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GrowthEvaluationController;
@@ -27,3 +28,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 //Route::middleware('auth:sanctum')->post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
 Route::post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
+
+Route::apiResource('system-accounts', SystemAccountController::class);
+

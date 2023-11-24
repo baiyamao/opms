@@ -23,11 +23,11 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->middleware(['auth', 'verified']);
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/register-list', function () {
+    return Inertia::render('RegisterList');
+})->middleware(['auth', 'verified'])->name('register-list');
 
 Route::get('/growthevaluation', function () {
     return Inertia::render('Growthevaluation');
@@ -38,5 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/system-accounts', function () {
+    return Inertia::render('SystemAccounts');
+})->middleware(['auth', 'verified'])->name('system-accounts');
 
 require __DIR__.'/auth.php';
