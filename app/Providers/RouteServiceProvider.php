@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/register-list';
+    public const HOME = '/optometry-clinic';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

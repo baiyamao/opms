@@ -16,11 +16,11 @@ const showingNavigationDropdown = ref(false);
             <nav class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                 <!-- Primary Navigation Menu -->
                 <div v-if="$page.props.auth.user" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
+                    <div class="flex justify-between">
                         <div class="flex">
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center">
-                                <Link :href="route('register-list')">
+                                <Link :href="route('optometry-clinic')">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200"
                                     />
@@ -29,8 +29,11 @@ const showingNavigationDropdown = ref(false);
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('register-list')" :active="route().current('register-list')">
-                                    挂号列表
+                                <NavLink :href="route('optometry-clinic')" :active="route().current('optometry-clinic')">
+                                    视光门诊
+                                </NavLink>
+                                <NavLink :href="route('product-sales')" :active="route().current('product-sales')">
+                                    产品销售
                                 </NavLink>
                                 <NavLink :href="route('growthevaluation')" :active="route().current('growthevaluation')">
                                     生长发育评价
@@ -116,8 +119,11 @@ const showingNavigationDropdown = ref(false);
                     class="sm:hidden"
                 >
                     <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('register-list')" :active="route().current('register-list')">
-                            挂号列表
+                        <ResponsiveNavLink :href="route('optometry-clinic')" :active="route().current('optometry-clinic')">
+                            视光门诊
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('product-sales')" :active="route().current('product-sales')">
+                            产品销售
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('growthevaluation')" :active="route().current('growthevaluation')">
                             生长发育评估

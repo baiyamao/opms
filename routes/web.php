@@ -25,9 +25,13 @@ Route::get('/', function () {
     ]);
 })->middleware(['auth', 'verified']);
 
-Route::get('/register-list', function () {
-    return Inertia::render('RegisterList');
-})->middleware(['auth', 'verified'])->name('register-list');
+Route::get('/optometry-clinic', function () {
+    return Inertia::render('OptometryClinic');
+})->middleware(['auth', 'verified'])->name('optometry-clinic');
+
+Route::get('/product-sales', function () {
+    return Inertia::render('ProductSales');
+})->middleware(['auth', 'verified'])->name('product-sales');
 
 Route::get('/growthevaluation', function () {
     return Inertia::render('Growthevaluation');
@@ -42,5 +46,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/system-accounts', function () {
     return Inertia::render('SystemAccounts');
 })->middleware(['auth', 'verified'])->name('system-accounts');
+
 
 require __DIR__.'/auth.php';

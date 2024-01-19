@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\FindOptometryRecordByRegisterRecordController;
+use App\Http\Controllers\OptometryRecordController;
 use App\Http\Controllers\SystemAccountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,4 +32,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/evaluate-growth', [GrowthEvaluationController::class, 'evaluate']);
 
 Route::apiResource('system-accounts', SystemAccountController::class);
+// 创建视光档案的资源路由
+Route::resource('optometry-records', OptometryRecordController::class);
+
+Route::post('/wdhis-login', [FindOptometryRecordByRegisterRecordController::class, 'wdhisLogin']);
+Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterList']);
 

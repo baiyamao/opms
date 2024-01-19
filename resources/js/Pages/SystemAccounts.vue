@@ -20,6 +20,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const systemAccounts: Ref<SystemAccount[]> = ref([]);
+
 const fetchSystemAccounts = async () => {
     try {
         const response = await axios.get('/api/system-accounts');
@@ -35,17 +36,14 @@ const startEdit = (id: number) => {
     editingId.value = id;
 };
 
-const saveEdit = async (account) => {
+// Update the saveEdit function to specify the type of 'account' parameter
+const saveEdit = async (account: SystemAccount) => {
     try {
-        // 发送 PUT 请求到服务器，这里的 URL 和请求体需要根据您的 API 进行调整
         await axios.put(`/api/system-accounts/${account.id}`, account);
-        // 数据更新成功后，重新加载系统账号列表
         await fetchSystemAccounts();
-        // 退出编辑模式
         editingId.value = null;
     } catch (error) {
         console.error(error);
-        // 可以添加一些错误处理逻辑，比如显示错误消息
     }
 };
 
@@ -53,12 +51,19 @@ const cancelEdit = () => {
     editingId.value = null;
 };
 
+// Define the deleteAccount function
+const deleteAccount = async (id: number) => {
+    try {
+        await axios.delete(`/api/system-accounts/${id}`);
+        await fetchSystemAccounts();
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 onMounted(() => {
     fetchSystemAccounts();
-    // console.log(systemAccounts.value); // 调试输出
 });
-
-// 添加更多方法（新增、编辑、删除）
 </script>
 
 <template>
@@ -85,23 +90,23 @@ onMounted(() => {
                         </thead>
                         <tbody>
                         <tr v-for="account in systemAccounts" :key="account.id" class="border-b border-gray-300">
-                            <td>
+                            <td class="border border-gray-300">
                                 <span v-if="editingId !== account.id">{{ account.system_name }}</span>
                                 <input v-else v-model="account.system_name" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
                             </td>
-                            <td>
+                            <td class="border border-gray-300">
                                 <span v-if="editingId !== account.id">{{ account.account }}</span>
                                 <input v-else v-model="account.account" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
                             </td>
-                            <td>
+                            <td class="border border-gray-300">
                                 <span v-if="editingId !== account.id">{{ account.password }}</span>
                                 <input v-else v-model="account.password" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
                             </td>
-                            <td>
+                            <td class="border border-gray-300">
                                 <span v-if="editingId !== account.id">{{ account.cookie }}</span>
                                 <input v-else v-model="account.cookie" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
                             </td>
-                            <td>
+                            <td class="border border-gray-300">
                                 <button v-if="editingId !== account.id" @click="startEdit(account.id)">修改</button>
                                 <button v-else @click="saveEdit(account)">保存</button>
                                 <button v-if="editingId !== account.id" @click="deleteAccount(account.id)">删除</button>
