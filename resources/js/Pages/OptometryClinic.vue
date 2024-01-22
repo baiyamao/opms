@@ -18,6 +18,7 @@ interface Patient {
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
     optometry_record_phone: string; // 档案电话
+    info_check:string;//一致性检查
     // ...根据实际需求添加其他属性
 }
 
@@ -97,7 +98,8 @@ onUnmounted(() => {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(patient, index) in patientData" :key="patient.opcId" class="hover">
+                            <tr :class="patient.state === '1' ? 'text-red-500' : (patient.state === '3' ? 'text-stone-500' : '')"
+                                v-for="(patient, index) in patientData" :key="patient.opcId" class="hover">
                                 <th>
                                     <label>
                                         <input type="checkbox" class="checkbox checkbox-xs" />
@@ -105,10 +107,18 @@ onUnmounted(() => {
                                 </th>
                                 <td>{{ patient.mZSJ }}</td>
                                 <td>{{ patient.regName }}</td>
-                                <td :class="patient.state === '1' ? 'zhenzhong' : (patient.state === '3' ? 'zhenbi' : 'daizhen')">
+                                <td :class="patient.state === '1' ? '' : (patient.state === '3' ? '' : 'text-emerald-400')">
                                     {{ patient.state === '1' ? '诊中' : (patient.state === '3' ? '诊毕' : '待诊') }}
                                 </td>
-                                <td>{{ patient.optometry_record_medical_record_number }}</td>
+                                <td :class="patient.info_check ==='强相关'?'':'text-red-600'"
+                                    >
+                                    <div v-if="patient.info_check !=='强相关'" class="tooltip tooltip-error" :data-tip="patient.info_check">
+                                        <button class="link">{{ patient.optometry_record_medical_record_number }}</button>
+                                    </div>
+                                    <div v-else>
+                                        {{ patient.optometry_record_medical_record_number }}
+                                    </div>
+                                </td>
                                 <td>{{ patient.optometry_record_name }}</td>
                                 <td>{{ patient.patName }}</td>
                                 <td>{{ patient.sex === '1' ? '男' : '女' }}</td>
@@ -124,7 +134,7 @@ onUnmounted(() => {
                                 <th>序号</th>
                                 <th>类别</th>
                                 <th>状态</th>
-                                <th>档案号</th>
+                                <th>病历编号</th>
                                 <th>档案姓名</th>
                                 <th>挂号姓名</th>
                                 <th>性别</th>

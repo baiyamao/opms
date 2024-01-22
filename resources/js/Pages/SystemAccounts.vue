@@ -77,44 +77,78 @@ onMounted(() => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                    <button class="mb-4 bg-blue-400">新增系统账号</button>
-                    <table class="border border-collapse border-gray-300">
-                        <thead>
-                        <tr>
-                            <th class="border border-gray-300 px-4 py-2 text-left">系统名称</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">账号</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">密码</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">Cookie</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="account in systemAccounts" :key="account.id" class="border-b border-gray-300">
-                            <td class="border border-gray-300">
-                                <span v-if="editingId !== account.id">{{ account.system_name }}</span>
-                                <input v-else v-model="account.system_name" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
-                            </td>
-                            <td class="border border-gray-300">
-                                <span v-if="editingId !== account.id">{{ account.account }}</span>
-                                <input v-else v-model="account.account" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
-                            </td>
-                            <td class="border border-gray-300">
-                                <span v-if="editingId !== account.id">{{ account.password }}</span>
-                                <input v-else v-model="account.password" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
-                            </td>
-                            <td class="border border-gray-300">
-                                <span v-if="editingId !== account.id">{{ account.cookie }}</span>
-                                <input v-else v-model="account.cookie" class="bg-green-300 w-full h-full border-0 p-0 text-left" />
-                            </td>
-                            <td class="border border-gray-300">
-                                <button v-if="editingId !== account.id" @click="startEdit(account.id)">修改</button>
-                                <button v-else @click="saveEdit(account)">保存</button>
-                                <button v-if="editingId !== account.id" @click="deleteAccount(account.id)">删除</button>
-                                <button v-else @click="cancelEdit">取消</button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <!-- Open the modal using ID.showModal() method -->
+                        <dialog id="my_modal_1" class="modal">
+                            <div class="modal-box">
+                                <h3 class="font-bold text-lg">Hello!</h3>
+                                <p class="py-4">Press ESC key or click the button below to close</p>
+                                <div class="modal-action">
+                                    <form method="dialog">
+                                        <!-- if there is a button in form, it will close the modal -->
+                                        <button class="btn">Close</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
+                        <ul class="menu lg:menu-horizontal pl-12">
+                            <li><a onclick="my_modal_1.showModal()">新增</a></li>
+                            <li><a>编辑</a></li>
+                            <li><a>删除</a></li>
+                        </ul>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <label>
+                                        <input type="checkbox" class="checkbox checkbox-sm" />
+                                    </label>
+                                </th>
+                                <th>ID</th>
+                                <th>系统名称</th>
+                                <th>账号</th>
+                                <th>密码</th>
+                                <th>Cookie</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="account in systemAccounts" :key="account.id">
+                                <th>
+                                    <label>
+                                        <input type="checkbox" class="checkbox checkbox-sm" />
+                                    </label>
+                                </th>
+                                <td>
+                                    <span v-if="editingId !== account.id">{{ account.id }}</span>
+                                    <input v-else v-model="account.id" />
+                                </td>
+                                <td>
+                                    <span v-if="editingId !== account.id">{{ account.system_name }}</span>
+                                    <input v-else v-model="account.system_name" />
+                                </td>
+                                <td>
+                                    <span v-if="editingId !== account.id">{{ account.account }}</span>
+                                    <input v-else v-model="account.account" />
+                                </td>
+                                <td>
+                                    <span v-if="editingId !== account.id">{{ account.password }}</span>
+                                    <input v-else v-model="account.password" />
+                                </td>
+                                <td>
+                                    <span v-if="editingId !== account.id">{{ account.cookie }}</span>
+                                    <input v-else v-model="account.cookie" />
+                                </td>
+                                <td>
+                                    <button  v-if="editingId !== account.id" @click="startEdit(account.id)" class="btn btn-ghost">修改</button>
+                                    <button v-else @click="saveEdit(account)">保存</button>
+                                    <button v-if="editingId !== account.id" @click="deleteAccount(account.id)">删除</button>
+                                    <button v-else @click="cancelEdit">取消</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

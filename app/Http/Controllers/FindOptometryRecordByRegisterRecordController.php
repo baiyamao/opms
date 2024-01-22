@@ -155,12 +155,78 @@ class FindOptometryRecordByRegisterRecordController extends Controller
             if (isset($item['telePhone'])) {
                 $query->orWhere('phone', $item['telePhone']);
             }
-            if (isset($item['cardData'])) {
+            if (isset($item['cardData']) && $this->isValidChineseID($item['cardData'])) {
                 $query->orWhere('resident_id_number', $item['cardData']);
             }
 
             // 执行搜索
             $optometryRecords = $query->get();
+            //病历信息一致性检查
+            $infoCheck = [];
+            // 基于结果数量或特定条件执行不同的逻辑
+            if (!$optometryRecords->isEmpty()) {
+                // 找到记录时的逻辑
+                // 例如，可以根据记录的数量或特定字段来决定接下来的操作
+                if ($optometryRecords->count() == 1) {
+                    // 找到一个记录时的逻辑
+                    $record = $optometryRecords->first();
+                    if (isset($item['cardData'])
+                        && $this->isValidChineseID($item['cardData'])
+                        && $record->resident_id_number == $item['cardData']){
+                        // 如果身份证匹配，则添加到过滤后的记录中
+                        $infoCheck['info_check'] = "强相关";
+                    }else{
+                        if ($record->name == $item['patName'] && $record->phone == $item['telePhone']) {
+                            $infoCheck['info_check'] = "强相关";
+                            // 验证 cardData 是否符合中国居民身份证号码格式
+                            if (isset($item['cardData']) && $this->isValidChineseID($item['cardData']) && empty($record->resident_id_number)) {
+                                $record->resident_id_number = $item['cardData'];
+                                $record->save(); // 保存更新
+                            }
+                        } else {
+                            if ($record->name != $item['patName']){
+                                $infoCheck['info_check'] = "姓名不一致";
+                            }
+                            if ($record->phone != $item['telePhone']){
+                                $infoCheck['info_check'] = "电话不一致";
+                            }
+                        }
+                    }
+
+                } else {
+                    // 初始化一个空数组来存储符合条件的记录
+                    $filteredRecords = [];
+
+                    foreach ($optometryRecords as $record) {
+                        if (isset($item['cardData'])
+                            && $this->isValidChineseID($item['cardData'])
+                            && $record->resident_id_number == $item['cardData']){
+                            // 如果身份证匹配，则添加到过滤后的记录中
+                            $filteredRecords[] = $record;
+                            $infoCheck['info_check'] = "强相关";
+                        }else{
+                            if ($record->name == $item['patName'] && $record->phone == $item['telePhone']) {
+                                // 如果姓名和电话都匹配，则添加到过滤后的记录中
+                                $filteredRecords[] = $record;
+                                $infoCheck['info_check'] = "强相关";
+                                // 验证 cardData 是否符合中国居民身份证号码格式
+                                if (isset($item['cardData']) && $this->isValidChineseID($item['cardData']) && empty($record->resident_id_number)) {
+                                    $record->resident_id_number = $item['cardData'];
+                                    $record->save(); // 保存更新
+                                }
+                            } else {
+                                $infoCheck['info_check'] = "多个相关记录";
+                            }
+                        }
+
+                    }
+                    if (!empty($filteredRecords)) {
+                        $optometryRecords = $filteredRecords;
+                    }
+
+                }
+            }
+            $item = array_merge($item, $infoCheck);
             $item = array_merge($item, $this->formatOptometryRecords($optometryRecords));
         }
 
@@ -196,6 +262,14 @@ class FindOptometryRecordByRegisterRecordController extends Controller
 
         // 返回格式化后的记录
         return $formatted;
+    }
+
+    /**
+     * 检查字符串是否符合中国居民身份证号码格式
+     */
+    private function isValidChineseID($id)
+    {
+        return preg_match("/^\d{15}(\d{2}[\dXx])?$/i", $id);
     }
 
 }
