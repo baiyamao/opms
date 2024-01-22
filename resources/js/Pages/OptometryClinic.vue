@@ -76,7 +76,7 @@ onUnmounted(() => {
                             <li><a>取消隐藏</a></li>
 
                         </ul>
-                        <table class="table table-xs table-zebra table-pin-rows">
+                        <table class="table table-sm table-zebra table-pin-rows">
                             <thead>
                             <tr>
                                 <th>
