@@ -112,11 +112,19 @@ onUnmounted(() => {
                                 </td>
                                 <td :class="patient.info_check ==='强相关'?'':'text-red-600'"
                                     >
-                                    <div v-if="patient.info_check !=='强相关'" class="tooltip tooltip-error" :data-tip="patient.info_check">
-                                        <button class="link">{{ patient.optometry_record_medical_record_number }}</button>
-                                    </div>
-                                    <div v-else>
+                                    <div v-if="patient.info_check ==='强相关'">
                                         {{ patient.optometry_record_medical_record_number }}
+                                    </div>
+                                    <div v-else-if="patient.info_check !==undefined" class="tooltip tooltip-error" :data-tip="patient.info_check">
+                                        <button class="link relative">
+                                            {{ patient.optometry_record_medical_record_number }}
+                                            <span
+                                                style="line-height: 0.1;"
+                                                class="absolute top-[-0.2rem] right-[-0.6rem] py-1 bg-red-500/60
+                                                    text-white rounded-full h-3 w-3 flex items-center
+                                                    justify-center text-sm" >&times;
+                                                ️</span>
+                                        </button>
                                     </div>
                                 </td>
                                 <td>{{ patient.optometry_record_name }}</td>
