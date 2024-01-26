@@ -23,6 +23,8 @@ interface Patient {
     // ...根据实际需求添加其他属性
 }
 
+const isChecked = ref(true); // 初始为true，表示复选框默认被选中
+
 const patientData = ref<Patient[]>([]);
 
 // fetchData函数负责从API获取数据，并更新patientData的值
@@ -124,7 +126,7 @@ onUnmounted(() => {
                                         <div class="form-control">
                                             <label class="label cursor-pointer">
                                                 <span class="label-text">自动编号</span>
-                                                <input type="checkbox" checked="checked" class="checkbox checkbox-sm" />
+                                                <input type="checkbox" v-model="isChecked" class="checkbox checkbox-sm" />
                                             </label>
                                         </div>
                                         <button class="btn btn-outline btn-primary">保存</button>
