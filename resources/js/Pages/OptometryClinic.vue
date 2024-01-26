@@ -14,7 +14,8 @@ interface Patient {
     optometry_record_medical_record_number: string; // 病历编号
     optometry_record_name: string; // 档案姓名
     patName: string;    // 挂号姓名
-    sex: string;        // 性别
+    sex: number;        // 性别
+    age: string;        // 年龄
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
     optometry_record_phone: string; // 档案电话
@@ -69,12 +70,69 @@ onUnmounted(() => {
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="overflow-x-auto">
                         <ul class="menu menu-xs lg:menu-horizontal pl-12">
-                            <li><a>新增档案</a></li>
+                            <li><a onclick="my_modal_3.showModal()">新增档案</a></li>
                             <li><a>编辑档案</a></li>
                             <li><a>查看挂号信息</a></li>
                             <li><a>隐藏</a></li>
                             <li><a>取消隐藏</a></li>
+                            <!-- You can open the modal using ID.showModal() method -->
+                            <dialog id="my_modal_3" class="modal">
+                                <div class="modal-box">
+                                    <form method="dialog">
+                                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                                    </form>
+                                    <form method="dialog" class="mx-auto w-full max-w-xs">
+                                        <label class="form-control w-full max-w-xs">
 
+                                            <div class="label">
+                                                <span class="label-text">姓名</span>
+                                            </div>
+                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
+                                        </label>
+                                        <label class="form-control w-full max-w-xs">
+                                                <div class="label">
+                                                    <span class="label-text">电话</span>
+                                                </div>
+                                                <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
+                                        </label>
+                                        <label class="form-control w-full max-w-xs">
+                                            <div class="label">
+                                                <span class="label-text">身份证号码</span>
+                                            </div>
+                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
+                                        </label>
+                                        <label class="form-control w-full max-w-xs">
+                                            <div class="label">
+                                                <span class="label-text">病历编号</span>
+                                            </div>
+                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
+                                        </label>
+
+                                        <select class="select select-bordered select-sm w-full max-w-xs py-0">
+                                            <option disabled selected>Small</option>
+                                            <option>Small Apple</option>
+                                            <option>Small Orange</option>
+                                            <option>Small Tomato</option>
+                                        </select>
+
+                                        <div class="form-control">
+                                            <label class="label cursor-pointer">
+                                                <span class="label-text">连续新增</span>
+                                                <input type="checkbox" class="checkbox checkbox-sm" />
+                                            </label>
+                                        </div>
+                                        <div class="form-control">
+                                            <label class="label cursor-pointer">
+                                                <span class="label-text">自动编号</span>
+                                                <input type="checkbox" checked="checked" class="checkbox checkbox-sm" />
+                                            </label>
+                                        </div>
+                                        <button class="btn btn-outline btn-primary">保存</button>
+
+                                    </form>
+
+                                </div>
+                            </dialog>
                         </ul>
                         <table class="table table-sm table-zebra table-pin-rows">
                             <thead>
@@ -91,6 +149,7 @@ onUnmounted(() => {
                                 <th>档案姓名</th>
                                 <th>挂号姓名</th>
                                 <th>性别</th>
+                                <th>年龄</th>
                                 <th>就诊ID</th>
                                 <th>挂号时间</th>
                                 <th>挂号电话</th>
@@ -129,7 +188,8 @@ onUnmounted(() => {
                                 </td>
                                 <td>{{ patient.optometry_record_name }}</td>
                                 <td>{{ patient.patName }}</td>
-                                <td>{{ patient.sex === '1' ? '男' : '女' }}</td>
+                                <td>{{ patient.sex === 1 ? '男' : '女' }}</td>
+                                <td>{{ patient.age }}</td>
                                 <td>{{ patient.cardData }}</td>
                                 <td>{{ patient.patRegTime }}</td>
                                 <td>{{ patient.telePhone }}</td>
@@ -146,6 +206,7 @@ onUnmounted(() => {
                                 <th>档案姓名</th>
                                 <th>挂号姓名</th>
                                 <th>性别</th>
+                                <th>年龄</th>
                                 <th>就诊ID</th>
                                 <th>挂号时间</th>
                                 <th>挂号电话</th>

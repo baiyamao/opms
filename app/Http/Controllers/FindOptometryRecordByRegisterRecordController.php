@@ -215,7 +215,10 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                                     $record->save(); // 保存更新
                                 }
                             } else {
-                                $infoCheck['info_check'] = "多个相关记录";
+                                if (empty($filteredRecords)) {
+                                    $infoCheck['info_check'] = "多个相关记录";
+                                }
+
                             }
                         }
 
