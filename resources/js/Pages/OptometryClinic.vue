@@ -218,7 +218,7 @@ onUnmounted(() => {
                                 </td>
                                 <td>
                                     <div v-if="patient.info_check !==undefined">
-                                        {{ (patient.info_check === "姓名不一致" || patient.info_check === "多个相关记录") ?'':(patient.optometry_record[0]?.name ?? '') }}
+                                        {{ patient.info_check === "多个相关记录" ?'':(patient.optometry_record[0]?.name ?? '') }}
                                     </div>
                                 </td>
                                 <td>{{ patient.patName }}</td>
@@ -229,7 +229,7 @@ onUnmounted(() => {
                                 <td>{{ patient.telePhone }}</td>
                                 <td>
                                     <div v-if="patient.info_check !==undefined">
-                                        {{ (patient.info_check === "电话不一致" || patient.info_check === "多个相关记录") ?'':(patient.optometry_record[0]?.phone ?? '') }}
+                                        {{ patient.info_check === "多个相关记录" ?'':(patient.optometry_record[0]?.phone ?? '') }}
                                     </div>
                                 </td>
                             </tr>
