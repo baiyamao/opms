@@ -208,7 +208,13 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                             if ($record->name == $item['patName'] && $record->phone == $item['telePhone']) {
                                 // 如果姓名和电话都匹配，则添加到过滤后的记录中
                                 $filteredRecords[] = $record;
-                                $infoCheck['info_check'] = "强相关";
+
+                                if (!empty($filteredRecords)) {//如果有多个强相关记录
+                                    $infoCheck['info_check'] = "多个相关记录";
+                                }else{
+                                    $infoCheck['info_check'] = "强相关";
+                                }
+
                                 // 验证 cardData 是否符合中国居民身份证号码格式
                                 if (isset($item['cardData']) && $this->isValidChineseID($item['cardData']) && empty($record->resident_id_number)) {
                                     $record->resident_id_number = $item['cardData'];
@@ -244,24 +250,12 @@ class FindOptometryRecordByRegisterRecordController extends Controller
     private function formatOptometryRecords($optometryRecords)
     {
         $formatted = [];
-        $medicalRecordNumbers = [];
+        $formatted['optometry_record']=[];
 
         foreach ($optometryRecords as $record) {
-            // 遍历记录的每个字段
-            foreach ($record->getAttributes() as $key => $value) {
-                $formattedKey = 'optometry_record_' . $key;
-                if ($key !== 'medical_record_number') {
-                    // 为字段添加前缀并存储值
-                    $formatted[$formattedKey] = $value;
-                } else {
-                    // 收集 medical_record_number
-                    $medicalRecordNumbers[] = $value;
-                }
-            }
+            // 将每个记录作为一个独立元素添加到数组中
+            $formatted['optometry_record'][] = $record;
         }
-
-        // 合并并去重 medical_record_number
-        $formatted['optometry_record_medical_record_number'] = implode(',', array_unique($medicalRecordNumbers));
 
         // 返回格式化后的记录
         return $formatted;

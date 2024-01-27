@@ -4,6 +4,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 
+// 定义单个视光记录的接口
+interface OptometryRecord {
+    medical_record_number: string;
+    name: string;
+    phone: string;
+    // ...其他可能的字段
+}
+
 // 定义接口类型来描述从 API 获取的病人数据的结构
 interface Patient {
     opcId: string;
@@ -11,14 +19,12 @@ interface Patient {
     mZSJ: string;       // 序号（假设为某种标识符）
     regName: string;    // 类别
     state: string;      // 状态
-    optometry_record_medical_record_number: string; // 病历编号
-    optometry_record_name: string; // 档案姓名
+    optometry_record: OptometryRecord[]; // 视光档案数组
     patName: string;    // 挂号姓名
     sex: number;        // 性别
     age: string;        // 年龄
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
-    optometry_record_phone: string; // 档案电话
     info_check:string;//一致性检查
     // ...根据实际需求添加其他属性
 }
@@ -159,7 +165,7 @@ onUnmounted(() => {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr :class="patient.state === '1' ? 'text-red-500' : (patient.state === '3' ? 'text-stone-500' : '')"
+                            <tr
                                 v-for="(patient, index) in patientData" :key="patient.opcId" class="hover">
                                 <th>
                                     <label>
@@ -168,34 +174,64 @@ onUnmounted(() => {
                                 </th>
                                 <td>{{ patient.mZSJ }}</td>
                                 <td>{{ patient.regName }}</td>
-                                <td :class="patient.state === '1' ? '' : (patient.state === '3' ? '' : 'text-emerald-400')">
+                                <td :class="patient.state === '1' ? 'bg-red-400' : (patient.state === '3' ? '' : 'bg-green-400')">
                                     {{ patient.state === '1' ? '诊中' : (patient.state === '3' ? '诊毕' : '待诊') }}
                                 </td>
                                 <td :class="patient.info_check ==='强相关'?'':'text-red-600'"
                                     >
-                                    <div v-if="patient.info_check ==='强相关'">
-                                        {{ patient.optometry_record_medical_record_number }}
-                                    </div>
-                                    <div v-else-if="patient.info_check !==undefined" class="tooltip tooltip-error" :data-tip="patient.info_check">
-                                        <button class="link relative">
-                                            {{ patient.optometry_record_medical_record_number }}
-                                            <span
-                                                style="line-height: 0.1;"
-                                                class="absolute top-[-0.2rem] right-[-0.6rem] py-1 bg-red-500/60
+                                    <div v-if="patient.info_check !==undefined">
+                                        <div v-if="patient.info_check ==='强相关'">
+                                            {{ patient.optometry_record[0].medical_record_number }}
+                                        </div>
+                                        <div v-else-if="patient.info_check ==='多个相关记录'">
+                                            <button class="link relative">
+                                                <div class="dropdown dropdown-left dropdown-hover">
+                                                    <div tabindex="0" class="link">多条记录</div>
+                                                    <ul tabindex="0"
+                                                        style="width: min-content;"
+                                                        class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-auto" >
+                                                        <li v-for="(record, index) in patient.optometry_record" :key="index">
+                                                            <a style="white-space: nowrap;">{{ record.medical_record_number }} {{ record.name }} {{ record.phone }}</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <span
+                                                    style="line-height: 0.1;"
+                                                    class="absolute top-[-0.2rem] right-[-0.6rem] py-1 bg-red-500/60
                                                     text-white rounded-full h-3 w-3 flex items-center
                                                     justify-center text-sm" >&times;
                                                 ️</span>
-                                        </button>
+                                            </button>
+                                        </div>
+                                        <div v-else class="tooltip tooltip-error" :data-tip="patient.info_check">
+                                            <button class="link relative">
+                                                {{ patient.optometry_record[0].medical_record_number }}
+                                                <span
+                                                    style="line-height: 0.1;"
+                                                    class="absolute top-[-0.2rem] right-[-0.6rem] py-1 bg-red-500/60
+                                                    text-white rounded-full h-3 w-3 flex items-center
+                                                    justify-center text-sm" >&times;
+                                                ️</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
-                                <td>{{ patient.optometry_record_name }}</td>
+                                <td>
+                                    <div v-if="patient.info_check !==undefined">
+                                        {{ (patient.info_check === "姓名不一致" || patient.info_check === "多个相关记录") ?'':(patient.optometry_record[0]?.name ?? '') }}
+                                    </div>
+                                </td>
                                 <td>{{ patient.patName }}</td>
                                 <td>{{ patient.sex === 1 ? '男' : '女' }}</td>
                                 <td>{{ patient.age }}</td>
                                 <td>{{ patient.cardData }}</td>
                                 <td>{{ patient.patRegTime }}</td>
                                 <td>{{ patient.telePhone }}</td>
-                                <td>{{ patient.optometry_record_phone }}</td>
+                                <td>
+                                    <div v-if="patient.info_check !==undefined">
+                                        {{ (patient.info_check === "电话不一致" || patient.info_check === "多个相关记录") ?'':(patient.optometry_record[0]?.phone ?? '') }}
+                                    </div>
+                                </td>
                             </tr>
                             </tbody>
                             <tfoot>
