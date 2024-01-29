@@ -206,14 +206,16 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                             $infoCheck['info_check'] = "强相关";
                         }else{
                             if ($record->name == $item['patName'] && $record->phone == $item['telePhone']) {
-                                // 如果姓名和电话都匹配，则添加到过滤后的记录中
-                                $filteredRecords[] = $record;
+
 
                                 if (!empty($filteredRecords)) {//如果有多个强相关记录
                                     $infoCheck['info_check'] = "多个相关记录";
                                 }else{
                                     $infoCheck['info_check'] = "强相关";
                                 }
+
+                                // 如果姓名和电话都匹配，则添加到过滤后的记录中
+                                $filteredRecords[] = $record;
 
                                 // 验证 cardData 是否符合中国居民身份证号码格式
                                 if (isset($item['cardData']) && $this->isValidChineseID($item['cardData']) && empty($record->resident_id_number)) {

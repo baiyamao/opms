@@ -189,7 +189,7 @@ onUnmounted(() => {
                                                     <div tabindex="0" class="link">多条记录</div>
                                                     <ul tabindex="0"
                                                         style="width: min-content;"
-                                                        class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-auto" >
+                                                        class="dropdown-content z-[100] menu p-2 shadow bg-base-100 rounded-box w-auto" >
                                                         <li v-for="(record, index) in patient.optometry_record" :key="index">
                                                             <a style="white-space: nowrap;">{{ record.medical_record_number }} {{ record.name }} {{ record.phone }}</a>
                                                         </li>
