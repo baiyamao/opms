@@ -6,7 +6,7 @@ import axios from 'axios';
 
 // 定义单个视光记录的接口
 interface OptometryRecord {
-    medical_record_number: string;
+    medical_record_number?: string;
     name: string;
     phone: string;
     // ...其他可能的字段
@@ -29,7 +29,6 @@ interface Patient {
     // ...根据实际需求添加其他属性
 }
 
-const isChecked = ref(true); // 初始为true，表示复选框默认被选中
 
 const patientData = ref<Patient[]>([]);
 
@@ -37,19 +36,34 @@ const patientData = ref<Patient[]>([]);
 async function fetchData() {
     try {
         const response = await axios.post('/api/get-register-list-with-optometry-record');
-        // 检查响应数据是否为数组
+
         if (response.data && Array.isArray(response.data)) {
-            // 使用断言来确保数据类型是Patient[]
             patientData.value = response.data as Patient[];
-            // 对数据按照挂号时间进行排序
             patientData.value.sort((a, b) => new Date(b.patRegTime).getTime() - new Date(a.patRegTime).getTime());
         } else {
-            console.error('Invalid data format received:', response.data);
+            console.error('数据格式不正确:', response.data);
         }
     } catch (error) {
-        console.error('Error fetching data:', error);
+        let message = '获取数据出错.';
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                // 可以根据错误响应体的内容定制错误信息
+                message = error.response.data.message || '获取数据出错.';
+            }
+        } else {
+            console.error('出错:', error);
+        }
+        // 调用openModal方法显示错误信息
+        openModal(message);
+
+        // 清除定时器，无论错误类型
+        if (intervalId !== undefined) {
+            clearInterval(intervalId);
+            intervalId = undefined;
+        }
     }
 }
+
 
 let intervalId: number | undefined;
 
@@ -65,6 +79,15 @@ onUnmounted(() => {
         clearInterval(intervalId);
     }
 });
+
+function openModal(errorMessage = '') {
+    const modal = document.getElementById('my_modal_1');
+    const modalErrorMessage = document.getElementById('modalErrorMessage');
+    if (modal && modalErrorMessage) {
+        modalErrorMessage.textContent = errorMessage; // 设置错误信息
+        (modal as HTMLDialogElement).showModal(); // 显示模态框
+    }
+}
 </script>
 
 
@@ -77,70 +100,25 @@ onUnmounted(() => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="overflow-x-auto">
+                        <dialog id="my_modal_1" class="modal">
+                            <div class="modal-box">
+                                <h3 class="font-bold text-lg">出错了！</h3>
+                                <p class="py-4" id="modalErrorMessage"></p>
+                                <div class="modal-action">
+                                    <form method="dialog">
+                                        <!-- if there is a button in form, it will close the modal -->
+                                        <button class="btn">我知道了</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
+
                         <ul class="menu menu-xs lg:menu-horizontal pl-12">
-                            <li><a onclick="my_modal_3.showModal()">新增档案</a></li>
+                            <li><a href="/optometry-record/add">新增档案</a></li>
                             <li><a>编辑档案</a></li>
                             <li><a>查看挂号信息</a></li>
                             <li><a>隐藏</a></li>
                             <li><a>取消隐藏</a></li>
-                            <!-- You can open the modal using ID.showModal() method -->
-                            <dialog id="my_modal_3" class="modal">
-                                <div class="modal-box">
-                                    <form method="dialog">
-                                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                                    </form>
-                                    <form method="dialog" class="mx-auto w-full max-w-xs">
-                                        <label class="form-control w-full max-w-xs">
-
-                                            <div class="label">
-                                                <span class="label-text">姓名</span>
-                                            </div>
-                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
-                                        </label>
-                                        <label class="form-control w-full max-w-xs">
-                                                <div class="label">
-                                                    <span class="label-text">电话</span>
-                                                </div>
-                                                <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
-                                        </label>
-                                        <label class="form-control w-full max-w-xs">
-                                            <div class="label">
-                                                <span class="label-text">身份证号码</span>
-                                            </div>
-                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
-                                        </label>
-                                        <label class="form-control w-full max-w-xs">
-                                            <div class="label">
-                                                <span class="label-text">病历编号</span>
-                                            </div>
-                                            <input type="text" placeholder="" class="input input-sm input-bordered w-full max-w-xs" />
-                                        </label>
-
-                                        <select class="select select-bordered select-sm w-full max-w-xs py-0">
-                                            <option disabled selected>Small</option>
-                                            <option>Small Apple</option>
-                                            <option>Small Orange</option>
-                                            <option>Small Tomato</option>
-                                        </select>
-
-                                        <div class="form-control">
-                                            <label class="label cursor-pointer">
-                                                <span class="label-text">连续新增</span>
-                                                <input type="checkbox" class="checkbox checkbox-sm" />
-                                            </label>
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label cursor-pointer">
-                                                <span class="label-text">自动编号</span>
-                                                <input type="checkbox" v-model="isChecked" class="checkbox checkbox-sm" />
-                                            </label>
-                                        </div>
-                                        <button class="btn btn-outline btn-primary">保存</button>
-
-                                    </form>
-
-                                </div>
-                            </dialog>
                         </ul>
                         <table class="table table-sm table-zebra table-pin-rows">
                             <thead>

@@ -19,7 +19,7 @@ class FindOptometryRecordByRegisterRecordController extends Controller
 
         $loginUrl = 'http://10.172.153.25:8080/wdhis-core-web/login-new/doAuth';
         $attemptCount = 0;
-        $maxAttempts = 3;
+        $maxAttempts = 1;
 
         while ($attemptCount < $maxAttempts) {
             $attemptCount++;
@@ -38,14 +38,16 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                         return response()->json(['message' => 'Login successful', 'cookie' => $newCookie]);
                     }
 
-                    return response()->json(['message' => 'Login successful with saved cookie']);
+                    return response()->json(['message' => '成功登录']);
                 } else if (isset($responseData['msg']) && $responseData['msg'] === '用户名或密码错误') {
-                    return response()->json(['message' => 'Username or password is incorrect'], 401);
+                    return response()->json(['message' => 'wdhis'.$responseData['msg']], 401);
+                } else if (isset($responseData['msg']) && $responseData['status'] === 12908) {
+                    return response()->json(['message' => 'wdhis'.$responseData['msg']], 401);
                 }
             }
         }
 
-        return response()->json(['message' => 'Login failed after several attempts'], 401);
+        return response()->json(['message' => 'wdhis未响应'], 401);
     }
 
     private function attemptLogin($systemAccount, $loginUrl)
@@ -130,7 +132,17 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                 return $this->appendOptometryRecords($data);
             } else {
                 // 数据获取失败，尝试重新登录
-                $this->wdhisLogin(new Request());
+                $loginResponse = $this->wdhisLogin(new Request());
+
+                // 检查登录响应是否成功
+                if ($loginResponse->status() != 200) {
+                    // 登录失败返回信息
+                    // 提取响应中的错误消息,解码json字符串并读取message
+                    $loginMessage = json_decode($loginResponse->content(), true)['message'] ?? 'wdhis登录失败，请使用系统账号管理中用户名和密码尝试登录his系统查找原因';
+                    return response()->json(['message' => $loginMessage], 401);
+                }
+
+                // 如果登录成功，再次尝试获取注册列表
                 return $this->getRegisterList($request);
             }
         }

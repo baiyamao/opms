@@ -33,6 +33,14 @@ Route::get('/product-sales', function () {
     return Inertia::render('ProductSales');
 })->middleware(['auth', 'verified'])->name('product-sales');
 
+Route::get('/optometry-record', function () {
+    return Inertia::render('OptometryRecord');
+})->middleware(['auth', 'verified'])->name('optometry-record');
+
+Route::get('/optometry-record/add', function () {
+    return Inertia::render('AddOptometryRecord');
+})->middleware(['auth', 'verified'])->name('add-optometry-record');
+
 Route::get('/growthevaluation', function () {
     return Inertia::render('Growthevaluation');
 })->name('growthevaluation');
