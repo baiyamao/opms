@@ -36,5 +36,5 @@ Route::apiResource('system-accounts', SystemAccountController::class);
 Route::resource('optometry-records', OptometryRecordController::class);
 
 Route::post('/wdhis-login', [FindOptometryRecordByRegisterRecordController::class, 'wdhisLogin']);
-Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterList']);
+Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterListWithOption']);
 

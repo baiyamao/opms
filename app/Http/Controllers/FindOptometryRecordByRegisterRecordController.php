@@ -39,9 +39,13 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                     }
 
                     return response()->json(['message' => '成功登录']);
-                } else if (isset($responseData['msg']) && $responseData['msg'] === '用户名或密码错误') {
+                } else if (isset($responseData['msg']) && $responseData['status'] === 12910) {
+                    //密码过期
                     return response()->json(['message' => 'wdhis'.$responseData['msg']], 401);
                 } else if (isset($responseData['msg']) && $responseData['status'] === 12908) {
+                    return response()->json(['message' => 'wdhis'.$responseData['msg']], 401);
+                } else if (isset($responseData['msg']) && $responseData['status'] === 12903) {
+                    //用户名或密码错误
                     return response()->json(['message' => 'wdhis'.$responseData['msg']], 401);
                 }
             }
@@ -105,15 +109,31 @@ class FindOptometryRecordByRegisterRecordController extends Controller
         return null;
     }
 
+    public function getRegisterListWithOption(Request $request)
+    {
+        // 根据请求参数决定是否使用带儿保的 URL
+        $showErbao = $request->input('showErbao', false);
+
+        if ($showErbao) {
+            // 目标 URL
+            //%2C2020005->儿保 %2C2020011->专家免费
+            // 使用带儿保的 URL
+            $url = 'http://10.172.153.25:8085/wdhis-outpat-web/pat/list/getRegisterList?area=N&state=0&reExamDays=0&empId=202000028&empRegDeptIds=2020001%2C2020005%2C2020006%2C2020007%2C2020008%2C2020009%2C2020010&lookSelf=false';
+        } else {
+            // 使用默认不含儿保的 URL
+            $url = 'http://10.172.153.25:8085/wdhis-outpat-web/pat/list/getRegisterList?area=N&state=0&reExamDays=0&empId=202000028&empRegDeptIds=2020001%2C2020006%2C2020007%2C2020008%2C2020009%2C2020010&lookSelf=false';
+        }
+
+        return $this->getRegisterList($url);
+    }
+
+
     /**
      * 获取挂号列表并附加视光档案信息。
      */
-    public function getRegisterList(Request $request)
+    // 提取重复代码到私有方法中
+    private function getRegisterList($url)
     {
-        // 目标 URL
-        //%2C2020005->儿保 %2C2020011->专家免费
-        $url = 'http://10.172.153.25:8085/wdhis-outpat-web/pat/list/getRegisterList?area=N&state=0&reExamDays=0&empId=202000028&empRegDeptIds=2020001%2C2020006%2C2020007%2C2020008%2C2020009%2C2020010&lookSelf=false';
-
         // 获取系统账号及其 cookie
         $systemAccount = SystemAccount::where('system_name', 'wdhis')->firstOrFail();
         $cookie = $systemAccount->cookie;
@@ -137,13 +157,12 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                 // 检查登录响应是否成功
                 if ($loginResponse->status() != 200) {
                     // 登录失败返回信息
-                    // 提取响应中的错误消息,解码json字符串并读取message
                     $loginMessage = json_decode($loginResponse->content(), true)['message'] ?? 'wdhis登录失败，请使用系统账号管理中用户名和密码尝试登录his系统查找原因';
                     return response()->json(['message' => $loginMessage], 401);
                 }
 
                 // 如果登录成功，再次尝试获取注册列表
-                return $this->getRegisterList($request);
+                return $this->fetchRegisterList($url);
             }
         }
 

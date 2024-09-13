@@ -31,11 +31,29 @@ interface Patient {
 
 
 const patientData = ref<Patient[]>([]);
+const showErbao = ref<boolean>(false); // 控制是否显示儿保挂号
+const showFinish = ref<boolean>(true); // 控制是否显示诊毕
+
+// 切换显示儿保挂号
+function toggleShowErbao() {
+    showErbao.value = !showErbao.value;
+    fetchData(); // 每次切换后重新获取数据
+}
+
+// 切换显示诊毕
+function toggleShowFinish() {
+    showFinish.value = !showFinish.value;
+    fetchData(); // 每次切换后重新获取数据
+}
+
+
 
 // fetchData函数负责从API获取数据，并更新patientData的值
 async function fetchData() {
     try {
-        const response = await axios.post('/api/get-register-list-with-optometry-record');
+        const response = await axios.post('/api/get-register-list-with-optometry-record',{
+            showErbao: showErbao.value,
+        });
 
         if (response.data && Array.isArray(response.data)) {
             patientData.value = response.data as Patient[];
@@ -117,8 +135,8 @@ function openModal(errorMessage = '') {
                             <li><a href="/optometry-record/add">新增档案</a></li>
                             <li><a>编辑档案</a></li>
                             <li><a>查看挂号信息</a></li>
-                            <li><a>隐藏</a></li>
-                            <li><a>取消隐藏</a></li>
+                            <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
+                            <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
                         </ul>
                         <table class="table table-sm table-zebra table-pin-rows">
                             <thead>
@@ -129,7 +147,7 @@ function openModal(errorMessage = '') {
                                     </label>
                                 </th>
                                 <th>序号</th>
-                                <th>类别</th>
+                                <th>科别</th>
                                 <th>状态</th>
                                 <th>病历编号</th>
                                 <th>档案姓名</th>
@@ -144,7 +162,10 @@ function openModal(errorMessage = '') {
                             </thead>
                             <tbody>
                             <tr
-                                v-for="(patient, index) in patientData" :key="patient.opcId" class="hover">
+                                v-for="(patient, index) in patientData"
+                                :key="patient.opcId"
+                                v-show="patient.state !== '3'||showFinish"
+                                class="hover">
                                 <th>
                                     <label>
                                         <input type="checkbox" class="checkbox checkbox-xs" />
@@ -216,7 +237,7 @@ function openModal(errorMessage = '') {
                             <tr>
                                 <th></th>
                                 <th>序号</th>
-                                <th>类别</th>
+                                <th>科别</th>
                                 <th>状态</th>
                                 <th>病历编号</th>
                                 <th>档案姓名</th>
