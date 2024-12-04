@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FindHuZhouFuYouRecordByRegisterRecordController;
 use App\Http\Controllers\FindOptometryRecordByRegisterRecordController;
 use App\Http\Controllers\OptometryRecordController;
 use App\Http\Controllers\SystemAccountController;
@@ -37,4 +38,5 @@ Route::resource('optometry-records', OptometryRecordController::class);
 
 Route::post('/wdhis-login', [FindOptometryRecordByRegisterRecordController::class, 'wdhisLogin']);
 Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterListWithOption']);
+Route::post('/tt', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'huZhouFuYouLogin']);
 

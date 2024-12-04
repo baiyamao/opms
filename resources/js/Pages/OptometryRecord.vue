@@ -4,11 +4,11 @@ import { Head } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <Head title="视光档案管理" />
+    <Head title="屈光发育档案" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-gray-800 dark:text-gray-200 leading-tight">视光档案管理</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-200 leading-tight">屈光发育档案</h2>
         </template>
 
         <div class="py-6">

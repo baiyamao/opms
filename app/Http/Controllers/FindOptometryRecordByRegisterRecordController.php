@@ -162,7 +162,7 @@ class FindOptometryRecordByRegisterRecordController extends Controller
                 }
 
                 // 如果登录成功，再次尝试获取注册列表
-                return $this->fetchRegisterList($url);
+                return $this->getRegisterList($url);
             }
         }
 

@@ -10,6 +10,7 @@ class SystemAccountController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * 管理系统账号api
      *
      * @return Response
      */
