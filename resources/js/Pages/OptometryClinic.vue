@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
+import { getRandomIV, encryptAES } from '@/utils/crypto-aes';
 
 // 定义单个视光记录的接口
 interface OptometryRecord {
@@ -106,6 +107,50 @@ function openModal(errorMessage = '') {
         (modal as HTMLDialogElement).showModal(); // 显示模态框
     }
 }
+
+const key = '385f33cb91484b04a177828829081ab7';
+interface SystemAccount {
+    username?: string;
+    password?: string;
+    iv?:string;
+}
+
+
+// 获取huzhoufuyou系统账号密码
+async function fetchSystemAccount(): Promise<SystemAccount | null> {
+    try {
+        const response = await axios.post('/api/get-system-account');
+
+        if (response.data) {
+            const { account, password } = response.data;
+            const systemAccount: SystemAccount= {
+                iv:getRandomIV()
+            };
+            if (systemAccount.iv != null) {
+                systemAccount.username = encryptAES(account, key, systemAccount.iv);
+            }
+            if (systemAccount.iv != null) {
+                systemAccount.password = encryptAES(password, key, systemAccount.iv);
+            }
+            return systemAccount;
+        } else {
+            console.error('API 返回数据为空');
+            return null;
+        }
+    } catch (error) {
+        console.error('请求失败:', error);
+        return null;
+    }
+}
+
+// 使用示例
+fetchSystemAccount().then((account) => {
+    if (account) {
+        console.log('aes账户信息:', account);
+    } else {
+        console.log('未获取到账户信息');
+    }
+});
 </script>
 
 

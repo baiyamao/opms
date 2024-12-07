@@ -38,5 +38,6 @@ Route::resource('optometry-records', OptometryRecordController::class);
 
 Route::post('/wdhis-login', [FindOptometryRecordByRegisterRecordController::class, 'wdhisLogin']);
 Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterListWithOption']);
-Route::post('/tt', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'huZhouFuYouLogin']);
+Route::post('/get-system-account', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'systemAccount']);
+Route::post('/get-hu-zhou-fu-you-record', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'huZhouFuYouLogin']);
 
