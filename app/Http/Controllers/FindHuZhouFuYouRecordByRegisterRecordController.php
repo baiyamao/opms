@@ -20,6 +20,7 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
 
     private function huZhouFuYouLogin(Array $aesUserInfo)
     {
+
         $systemAccount = SystemAccount::where('system_name', 'huzhoufuyou')->first();
 
         if (!$systemAccount) {
@@ -44,42 +45,6 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
             'password' => $password
         ];
 
-
-// Step 1: 获取初始 Set-Cookie 信息
-//        $initResponse = Http::withHeaders([
-//            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-//            'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-//            'Cache-Control' => 'no-cache',
-//            'Connection' => 'keep-alive',
-//            'Pragma' => 'no-cache',
-//            'Referer' => 'http://10.172.252.142:8082/fypt-web/login',
-//            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-//        ])->get('http://10.172.252.142:8082/fypt-web/login');
-//
-//        // 检查是否成功获取响应
-//        if (!$initResponse->successful()) {
-//            return response()->json([
-//                'message' => 'Failed to fetch initial cookies',
-//                'status' => $initResponse->status(),
-//                'body' => $initResponse->body()
-//            ], 400);
-//        }
-//
-//        // 提取 Set-Cookie
-//        $setCookieHeader = $initResponse->headers()['Set-Cookie'] ?? null;
-//        if (!$setCookieHeader) {
-//            return response()->json([
-//                'message' => 'Set-Cookie header not found in initial response'
-//            ], 400);
-//        }
-//
-        // Step 2: 将获取到的 Set-Cookie 添加到登录请求中
-//        $cookies = [];
-//        foreach ($setCookieHeader as $cookie) {
-//            $parts = explode(';', $cookie); // Cookie 以分号分隔
-//            $keyValue = explode('=', $parts[0]); // 键值对分割
-//            $cookies[$keyValue[0]] = $keyValue[1] ?? '';
-//        }
         $cookies = [];
         $keyValue = explode('=', $cookie);
         $cookies[$keyValue[0]] = $keyValue[1];
@@ -97,6 +62,7 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
         ])
             ->asForm() // 设置表单提交方式
             ->withCookies($cookies, '10.172.252.142') // 添加 Set-Cookie
+            ->withoutRedirecting() // 禁止自动跟随重定向
             ->post('http://10.172.252.142:8082/fypt-web/login', $data);
 
         // Step 4: 检查响应是否成功
@@ -149,23 +115,19 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
         ];
 
         $cookies = [];
-        $keyValue = explode('=', $cookie);
-        $cookies[$keyValue[0]] = $keyValue[1];
-        // Step 3: 发送登录请求
-        $response = Http::withHeaders([
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-            'Cache-Control' => 'no-cache',
-            'Connection' => 'keep-alive',
-            'Content-Type' => 'application/x-www-form-urlencoded',
-            'Origin' => 'http://10.172.252.142:8082',
-            'Pragma' => 'no-cache',
-            'Referer' => 'http://10.172.252.142:8082/fypt-web/login',
-            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        ])
-            ->asForm() // 设置表单提交方式
-            ->withCookies($cookies, '10.172.252.142') // 添加 Set-Cookie
-            ->post('http://10.172.252.142:8082/fypt-web/ccGeneralInfo/quickFindList', $data);
+
+        if ($this->containsJeesiteSessionId($cookie)) {
+            $keyValue = explode('=', $cookie);
+            $cookies[$keyValue[0]] = $keyValue[1];
+        }
+
+        // Step 3: 发送数据查询请求
+        $response = $this->sendHttpRequest(
+            'http://10.172.252.142:8082/fypt-web/ccGeneralInfo/quickFindList',
+            $data,
+            $cookies,
+            'POST'
+        );
 
         // Step 4: 检查响应是否成功
         // 检查响应
@@ -173,28 +135,94 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
             // 响应成功，直接返回响应内容
             return response()->json([
                 'message' => 'Request successful',
-                'data' => $response->body(),
+                'data' => $response->json(),
             ]);
         } elseif ($response->status() === 302) {
             // 响应重定向，提取 set-cookie 并存储到数据库
             $setCookieHeader = $response->header('Set-Cookie');
             if ($setCookieHeader) {
                 // 匹配 jeesite.session.id 的值
-                if (preg_match('/jeesite\.session\.id=([^;]+)/', $setCookieHeader, $matches)) {
-                    $sessionId = $matches[1];
-
+                $sessionId = $this->extractCookie($setCookieHeader, 'jeesite.session.id');
+                if ($sessionId) {
                     // 存储到数据库
                     SystemAccount::updateOrCreate(
-                        ['system_name' => 'huzhoufuyou'], // 这里替换为实际的 system_name 条件
+                        ['system_name' => 'huzhoufuyou'],
                         ['cookie' => $sessionId]
                     );
 
-                    $this->huZhouFuYouLogin($aesUserInfo);
+                    // 重新登录并发起获取数据的请求
+                    $loginResult = $this->huZhouFuYouLogin($aesUserInfo);
+                    if ($loginResult->getStatusCode() == 400) {
+                        // 登录失败
+                        return $loginResult;
+                    }
+                    // 使用新登录的 Cookie 重新发起数据查询请求
+                    $cookies = [];
+
+                    if ($this->containsJeesiteSessionId($sessionId)) {
+                        $keyValue = explode('=', $sessionId);
+                        $cookies[$keyValue[0]] = $keyValue[1];
+                    }
+                    $newResponse=$this->sendHttpRequest(
+                        'http://10.172.252.142:8082/fypt-web/ccGeneralInfo/quickFindList',
+                        $data,
+                        $cookies,
+                        'POST'
+                    );
+                    if ($newResponse->successful()) {
+                        // 返回最终数据和登录结果
+                        return response()->json([
+                            'message' => 'Request successful after login',
+                            'loginResult' => 'Login successful',
+                            'data' => $newResponse->json(),
+                        ]);
+                    }
+                    // 数据查询失败
+                    return response()->json([
+                        'message' => 'Data request failed after login',
+                        'status' => $newResponse->status(),
+                        'body' => $newResponse->body(),
+                    ], 400);
                 }
             }
+            //如果set-cookie为空，说明数据库已有有效的cookie，可直接发起登录
+            $loginResult = $this->huZhouFuYouLogin($aesUserInfo);
+            if ($loginResult->getStatusCode() == 400) {
+                // 登录失败
+                return $loginResult;
+            }
+            // 使用新登录的 Cookie 重新发起数据查询请求
+            $cookies = [];
+            $systemAccount = SystemAccount::where('system_name', 'huzhoufuyou')->first();
 
+            if (!$systemAccount) {
+                return response()->json(['message' => 'System account not found'], 404);
+            }
+            $cookie = $systemAccount->cookie;
+
+            if ($this->containsJeesiteSessionId($cookie)) {
+                $keyValue = explode('=', $cookie);
+                $cookies[$keyValue[0]] = $keyValue[1];
+            }
+            $newResponse=$this->sendHttpRequest(
+                'http://10.172.252.142:8082/fypt-web/ccGeneralInfo/quickFindList',
+                $data,
+                $cookies,
+                'POST'
+            );
+            if ($newResponse->successful()) {
+                // 返回最终数据和登录结果
+                return response()->json([
+                    'message' => 'Request successful after login',
+                    'loginResult' => 'Login successful',
+                    'data' => $newResponse->json(),
+                ]);
+            }
+            // 数据查询失败
             return response()->json([
-                'message' => 'Redirect but no valid set-cookie found',
+                'message' => 'Data request failed after login',
+                'status' => $newResponse->status(),
+                'body' => $newResponse->body(),
             ], 400);
         } else {
             // 请求失败，返回错误信息
@@ -204,6 +232,54 @@ class FindHuZhouFuYouRecordByRegisterRecordController extends Controller
                 'body' => $response->body(),
             ], 400);
         }
+    }
+
+    private function extractCookie($header, $key) {
+        if (preg_match("/($key=[^;]+)/", $header, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * 检测字符串中是否包含指定的键名 'jeesite.session.id'
+     *
+     * @param string $cookie 要检测的字符串
+     * @return bool 返回 true 表示包含，false 表示不包含
+     */
+    private function containsJeesiteSessionId(string $cookie): bool
+    {
+        // 使用 strpos 检查是否包含指定字符串
+        return str_contains($cookie, 'jeesite.session.id=');
+    }
+
+    private function sendHttpRequest(string $url, array $data, array $cookies = [], string $method = 'POST')
+    {
+        $headers = [
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+            'Content-Type' => 'application/json;charset=UTF-8',
+            'Origin' => 'http://10.172.252.142:8082',
+            'Pragma' => 'no-cache',
+            'Referer' => 'http://10.172.252.142:8082/fypt-web/login',
+            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        ];
+
+        $request = Http::withHeaders($headers)
+            ->withCookies($cookies, '10.172.252.142') // 添加 Set-Cookie
+            ->withoutRedirecting(); // 禁止自动跟随重定向
+
+        if ($method === 'POST') {
+            $response = $request->withBody(json_encode($data), 'application/json')->post($url);
+        } elseif ($method === 'GET') {
+            $response = $request->get($url, $data); // 使用查询参数
+        } else {
+            throw new InvalidArgumentException("Unsupported HTTP method: $method");
+        }
+
+        return $response;
     }
 
 
