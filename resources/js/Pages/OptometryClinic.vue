@@ -27,6 +27,7 @@ interface Patient {
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
     info_check:string;//一致性检查
+    selected: boolean;
     // ...根据实际需求添加其他属性
 }
 
@@ -47,7 +48,54 @@ function toggleShowFinish() {
     fetchData(); // 每次切换后重新获取数据
 }
 
+const formatDate = (dateString: string): string => {
+    const [date, time] = dateString.split(' ');
+    const [hours, minutes] = time.split(':');
+    return `${date} ${hours}:${minutes}`;
+};
 
+// 是否为多选模式
+const isMultiSelect = ref(false);
+
+// 切换多选模式
+const toggleMultiSelect = () => {
+    isMultiSelect.value = !isMultiSelect.value;
+
+    // 如果退出多选模式，清除所有选中状态
+    if (!isMultiSelect.value) {
+        patientData.value.forEach(row => (row.selected = false));
+    }
+};
+
+// 选中行的索引
+const selectedRowIndex = ref<number | null>(null);
+
+// 单选模式下单击行
+const toggleSingleSelect = (index: number) => {
+    if(patientData.value[index].selected){//再次单击取消选择
+        patientData.value[index].selected = !patientData.value[index].selected;
+    }else{
+        patientData.value.forEach((row, i) => (row.selected = i === index));
+    }
+
+};
+
+// 多选模式下切换选中状态
+const toggleRowSelection = (index: number) => {
+    patientData.value[index].selected = !patientData.value[index].selected;
+};
+// 单击复选框处理（防止双击和手动选中冲突）
+const onCheckboxChange = (index: number, checked: boolean) => {
+    patientData.value[index].selected = checked;
+};
+
+//全选和取消全选
+const toggleAll = (event: Event) => {
+    const checked = (event.target as HTMLInputElement).checked;
+    patientData.value.forEach(row => {
+        row.selected = checked;
+    });
+};
 
 // fetchData函数负责从API获取数据，并更新patientData的值
 async function fetchData() {
@@ -57,7 +105,23 @@ async function fetchData() {
         });
 
         if (response.data && Array.isArray(response.data)) {
-            patientData.value = response.data as Patient[];
+            //// 显式地为 `selected` 添加默认值
+            // 更新 patientData.value，保留 selected 状态
+            patientData.value = response.data.map(patient => {
+                // 在现有 patientData.value 中查找是否存在当前患者数据
+                // 假设 opcId 是唯一标识符，用于匹配患者
+                const existingPatient = patientData.value.find(
+                    (p: Patient) => p.opcId === patient.opcId
+                );
+
+                // 返回新的患者数据对象，保留原属性，并根据以下逻辑处理 selected:
+                // - 如果 existingPatient 存在且其 selected 为 true，则保留 true
+                // - 如果 existingPatient 不存在或 selected 为 false，则设置为 false
+                return {
+                    ...patient,                           // 保留新数据的所有原属性
+                    selected: existingPatient?.selected || false, // 根据原状态保留或重置
+                };
+            });
             patientData.value.sort((a, b) => new Date(b.patRegTime).getTime() - new Date(a.patRegTime).getTime());
         } else {
             console.error('数据格式不正确:', response.data);
@@ -177,18 +241,26 @@ fetchSystemAccount().then((account) => {
                         </dialog>
 
                         <ul class="menu menu-xs lg:menu-horizontal pl-12">
+                            <li><a
+                                :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
+                                @click="toggleMultiSelect"
+                            >多选</a></li>
                             <li><a href="/optometry-record/add">新增档案</a></li>
                             <li><a>编辑档案</a></li>
                             <li><a>查看挂号信息</a></li>
                             <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
                             <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
                         </ul>
-                        <table class="table table-sm table-zebra table-pin-rows">
+                        <table class="table table-sm table-pin-rows">
                             <thead>
                             <tr>
                                 <th>
                                     <label>
-                                        <input type="checkbox" class="checkbox checkbox-xs" />
+                                        <input
+                                            v-if="isMultiSelect"
+                                            type="checkbox"
+                                           class="checkbox checkbox-xs"
+                                           @change="toggleAll($event)"/>
                                     </label>
                                 </th>
                                 <th>序号</th>
@@ -210,10 +282,20 @@ fetchSystemAccount().then((account) => {
                                 v-for="(patient, index) in patientData"
                                 :key="patient.opcId"
                                 v-show="patient.state !== '3'||showFinish"
-                                class="hover">
+                                @click="isMultiSelect ? toggleRowSelection(index) : toggleSingleSelect(index)"
+                                :class="{
+                                        'bg-blue-500 text-white': patient.selected,
+                                        'hover': !patient.selected,
+                                      }"
+                                class="cursor-pointer">
                                 <th>
                                     <label>
-                                        <input type="checkbox" class="checkbox checkbox-xs" />
+                                        <input
+                                                v-if="isMultiSelect"
+                                                type="checkbox"
+                                               class="checkbox checkbox-xs "
+                                               v-model="patient.selected"
+                                               @change="onCheckboxChange(index, patient.selected)"/>
                                     </label>
                                 </th>
                                 <td>{{ patient.mZSJ }}</td>
@@ -269,7 +351,7 @@ fetchSystemAccount().then((account) => {
                                 <td>{{ patient.sex === 1 ? '男' : '女' }}</td>
                                 <td>{{ patient.age }}</td>
                                 <td>{{ patient.cardData }}</td>
-                                <td>{{ patient.patRegTime }}</td>
+                                <td>{{ formatDate(patient.patRegTime) }}</td>
                                 <td>{{ patient.telePhone }}</td>
                                 <td>
                                     <div v-if="patient.info_check !==undefined">
