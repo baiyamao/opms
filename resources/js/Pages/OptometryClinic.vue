@@ -408,7 +408,7 @@ fetchSystemAccount().then((account) => {
                                 role="tab"
                                 class="tab"
                                 aria-label="挂号详情"
-                                checked="checked" />
+                                :checked="true" />
                             <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
                                 {{patientData.filter((patient) => patient.selected)}}
                             </div>
