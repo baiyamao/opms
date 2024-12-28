@@ -56,14 +56,18 @@ const formatDate = (dateString: string): string => {
 
 // 是否为多选模式
 const isMultiSelect = ref(false);
+// 单选模式下是否有条目被选中
+const isSingleSelect = ref(false);
 
 // 切换多选模式
 const toggleMultiSelect = () => {
     isMultiSelect.value = !isMultiSelect.value;
+    isSingleSelect.value = false;
 
     // 如果退出多选模式，清除所有选中状态
     if (!isMultiSelect.value) {
         patientData.value.forEach(row => (row.selected = false));
+        isSingleSelect.value = false;
     }
 };
 
@@ -74,8 +78,10 @@ const selectedRowIndex = ref<number | null>(null);
 const toggleSingleSelect = (index: number) => {
     if(patientData.value[index].selected){//再次单击取消选择
         patientData.value[index].selected = !patientData.value[index].selected;
+        isSingleSelect.value = false;
     }else{
         patientData.value.forEach((row, i) => (row.selected = i === index));
+        isSingleSelect.value = true;
     }
 
 };
@@ -222,11 +228,26 @@ fetchSystemAccount().then((account) => {
 <template>
     <Head title="视光门诊" />
 
-    <AuthenticatedLayout>
-        <div class="py-6">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <AuthenticatedLayout class="overflow-hidden h-screen">
+        <ul class="menu menu-xs lg:menu-horizontal pl-12">
+            <li><a
+                :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
+                @click="toggleMultiSelect"
+            >多选</a></li>
+            <li><a href="/optometry-record/add">新增档案</a></li>
+            <li><a>编辑档案</a></li>
+            <li><a>查看挂号信息</a></li>
+            <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
+            <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
+        </ul>
+        <div
+            :class="{'flex flex-row justify-center':isSingleSelect}">
+            <div
+                :class="{'basis-1/3 lg:pr-2':isSingleSelect}"
+                class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="overflow-x-auto">
+
+                    <div class="overflow-x-auto h-screen-minus-15">
                         <dialog id="my_modal_1" class="modal">
                             <div class="modal-box">
                                 <h3 class="font-bold text-lg">出错了！</h3>
@@ -239,19 +260,7 @@ fetchSystemAccount().then((account) => {
                                 </div>
                             </div>
                         </dialog>
-
-                        <ul class="menu menu-xs lg:menu-horizontal pl-12">
-                            <li><a
-                                :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
-                                @click="toggleMultiSelect"
-                            >多选</a></li>
-                            <li><a href="/optometry-record/add">新增档案</a></li>
-                            <li><a>编辑档案</a></li>
-                            <li><a>查看挂号信息</a></li>
-                            <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
-                            <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
-                        </ul>
-                        <table class="table table-sm table-pin-rows">
+                        <table class="table table-sm table-pin-rows h-full">
                             <thead>
                             <tr>
                                 <th>
@@ -266,15 +275,15 @@ fetchSystemAccount().then((account) => {
                                 <th>序号</th>
                                 <th>科别</th>
                                 <th>状态</th>
-                                <th>病历编号</th>
-                                <th>档案姓名</th>
+                                <th v-if="!isSingleSelect">病历编号</th>
+                                <th v-if="!isSingleSelect">档案姓名</th>
                                 <th>挂号姓名</th>
-                                <th>性别</th>
-                                <th>年龄</th>
-                                <th>就诊ID</th>
-                                <th>挂号时间</th>
-                                <th>挂号电话</th>
-                                <th>档案电话</th>
+                                <th v-if="!isSingleSelect">性别</th>
+                                <th v-if="!isSingleSelect">年龄</th>
+                                <th v-if="!isSingleSelect">就诊ID</th>
+                                <th v-if="!isSingleSelect">挂号时间</th>
+                                <th v-if="!isSingleSelect">挂号电话</th>
+                                <th v-if="!isSingleSelect">档案电话</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -303,7 +312,8 @@ fetchSystemAccount().then((account) => {
                                 <td :class="patient.state === '1' ? 'bg-red-400' : (patient.state === '3' ? '' : 'bg-green-400')">
                                     {{ patient.state === '1' ? '诊中' : (patient.state === '3' ? '诊毕' : '待诊') }}
                                 </td>
-                                <td :class="patient.info_check ==='强相关'?'':'text-red-600'"
+                                <td v-if="!isSingleSelect"
+                                    :class="patient.info_check ==='强相关'?'':'text-red-600'"
                                     >
                                     <div v-if="patient.info_check !==undefined">
                                         <div v-if="patient.info_check ==='强相关'">
@@ -342,18 +352,18 @@ fetchSystemAccount().then((account) => {
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td v-if="!isSingleSelect">
                                     <div v-if="patient.info_check !==undefined">
                                         {{ patient.info_check === "多个相关记录" ?'':(patient.optometry_record[0]?.name ?? '') }}
                                     </div>
                                 </td>
                                 <td>{{ patient.patName }}</td>
-                                <td>{{ patient.sex === 1 ? '男' : '女' }}</td>
-                                <td>{{ patient.age }}</td>
-                                <td>{{ patient.cardData }}</td>
-                                <td>{{ formatDate(patient.patRegTime) }}</td>
-                                <td>{{ patient.telePhone }}</td>
-                                <td>
+                                <td v-if="!isSingleSelect">{{ patient.sex === 1 ? '男' : '女' }}</td>
+                                <td v-if="!isSingleSelect">{{ patient.age }}</td>
+                                <td v-if="!isSingleSelect">{{ patient.cardData }}</td>
+                                <td v-if="!isSingleSelect">{{ formatDate(patient.patRegTime) }}</td>
+                                <td v-if="!isSingleSelect">{{ patient.telePhone }}</td>
+                                <td v-if="!isSingleSelect">
                                     <div v-if="patient.info_check !==undefined">
                                         {{ patient.info_check === "多个相关记录" ?'':(patient.optometry_record[0]?.phone ?? '') }}
                                     </div>
@@ -366,21 +376,57 @@ fetchSystemAccount().then((account) => {
                                 <th>序号</th>
                                 <th>科别</th>
                                 <th>状态</th>
-                                <th>病历编号</th>
-                                <th>档案姓名</th>
+                                <th v-if="!isSingleSelect">病历编号</th>
+                                <th v-if="!isSingleSelect">档案姓名</th>
                                 <th>挂号姓名</th>
-                                <th>性别</th>
-                                <th>年龄</th>
-                                <th>就诊ID</th>
-                                <th>挂号时间</th>
-                                <th>挂号电话</th>
-                                <th>档案电话</th>
+                                <th v-if="!isSingleSelect">性别</th>
+                                <th v-if="!isSingleSelect">年龄</th>
+                                <th v-if="!isSingleSelect">就诊ID</th>
+                                <th v-if="!isSingleSelect">挂号时间</th>
+                                <th v-if="!isSingleSelect">挂号电话</th>
+                                <th v-if="!isSingleSelect">档案电话</th>
                             </tr>
                             </tfoot>
                         </table>
                     </div>
                 </div>
             </div>
+            <div
+                v-if="isSingleSelect"
+                class="basis-2/3 max-w-7xl mx-auto sm:px-6 lg:px-8 lg:pl-2">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="overflow-x-auto h-screen-minus-15 p-2">
+                        <div role="tablist" class="tabs tabs-lifted">
+                            <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Tab 1" />
+                            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                                Tab content 1
+                            </div>
+
+                            <input
+                                type="radio"
+                                name="my_tabs_2"
+                                role="tab"
+                                class="tab"
+                                aria-label="挂号详情"
+                                checked="checked" />
+                            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                                {{patientData.filter((patient) => patient.selected)}}
+                            </div>
+
+                            <input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Tab 3" />
+                            <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
+                                Tab content 3
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
+<style scoped>
+input[type="radio"]:focus {
+    outline: none;
+    box-shadow: none;
+}
+</style>

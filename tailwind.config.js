@@ -18,6 +18,9 @@ export default {
             },
             width: {
                 '128': '32rem',
+            },
+            height: {
+                'screen-minus-15': 'calc(100vh - 21*0.25rem)',
             }
         },
     },
