@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { getRandomIV, encryptAES } from '@/utils/crypto-aes';
+import ShowData from "@/Components/ShowData.vue";
 
 // 定义单个视光记录的接口
 interface OptometryRecord {
@@ -27,6 +28,9 @@ interface Patient {
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
     info_check:string;//一致性检查
+    addr?: string; // 可选属性
+    idCard?: string; // 可选属性
+    patClass?: string; // 可选属性
     selected: boolean;
     // ...根据实际需求添加其他属性
 }
@@ -57,7 +61,7 @@ const formatDate = (dateString: string): string => {
 // 是否为多选模式
 const isMultiSelect = ref(false);
 // 单选模式下是否有条目被选中
-const isSingleSelect = ref(true);
+const isSingleSelect = ref(false);
 
 // 切换多选模式
 const toggleMultiSelect = () => {
@@ -525,7 +529,7 @@ const setActiveTab = (tabId: string) => {
                                         tabindex="0"
                                         class="dropdown-content card card-compact bg-primary text-primary-content z-[1] w-96 p-2 shadow">
                                         <div class="card-body">
-                                            {{patientData.filter((patient) => patient.selected)}}
+                                            <ShowData :data="patientData.filter((patient) => patient.selected)"/>
                                         </div>
                                     </div>
                                 </div>
@@ -550,7 +554,7 @@ const setActiveTab = (tabId: string) => {
                                                     ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500'
                                                     : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'
                                                 ]"
-                                            aria-current="activeTab === tab.id ? 'page' : false"
+                                            :aria-current="activeTab === tab.id ? 'page' : false"
                                         >
                                             <svg
                                                 class="w-4 h-4 me-2"
