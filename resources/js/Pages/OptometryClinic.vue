@@ -319,17 +319,20 @@ const setActiveTab = (tabId: string) => {
     <Head title="视光门诊" />
 
     <AuthenticatedLayout class="overflow-hidden h-screen">
-        <ul class="menu menu-xs lg:menu-horizontal pl-12">
-            <li><a
-                :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
-                @click="toggleMultiSelect"
-            >多选</a></li>
-            <li><a href="/optometry-record/add">新增档案</a></li>
-            <li><a>编辑档案</a></li>
-            <li><a>查看挂号信息</a></li>
-            <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
-            <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
-        </ul>
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <ul class="menu menu-xs lg:menu-horizontal pl-12">
+                <li><a
+                    :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
+                    @click="toggleMultiSelect"
+                >多选</a></li>
+                <li><a href="/optometry-record/add">新增档案</a></li>
+                <li><a>编辑档案</a></li>
+                <li><a>查看挂号信息</a></li>
+                <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
+                <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
+            </ul>
+        </div>
+
         <div
             :class="{'flex flex-row justify-center':isSingleSelect}">
             <div
@@ -506,20 +509,20 @@ const setActiveTab = (tabId: string) => {
 <!--                                    <span class="loading loading-bars loading-xs"></span>-->
 <!--                                    <span>正在自动建立电子档案</span>-->
 <!--                                </div>-->
-                                <div role="alert" class="alert alert-warning px-1 py-0 text-sm">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="h-6 w-6 shrink-0 stroke-current"
-                                        fill="none"
-                                        viewBox="0 0 24 24">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    <span>请点击档案基本信息手动建档</span>
-                                </div>
+<!--                                <div role="alert" class="alert alert-warning px-1 py-0 text-sm">-->
+<!--                                    <svg-->
+<!--                                        xmlns="http://www.w3.org/2000/svg"-->
+<!--                                        class="h-6 w-6 shrink-0 stroke-current"-->
+<!--                                        fill="none"-->
+<!--                                        viewBox="0 0 24 24">-->
+<!--                                        <path-->
+<!--                                            stroke-linecap="round"-->
+<!--                                            stroke-linejoin="round"-->
+<!--                                            stroke-width="2"-->
+<!--                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />-->
+<!--                                    </svg>-->
+<!--                                    <span>请点击档案基本信息手动建档</span>-->
+<!--                                </div>-->
 
                             </div>
                             <div class="flex flex-row gap-4 text-sm">
