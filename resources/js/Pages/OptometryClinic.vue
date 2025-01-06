@@ -5,6 +5,13 @@ import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { getRandomIV, encryptAES } from '@/utils/crypto-aes';
 import ShowData from "@/Components/ShowData.vue";
+import VueTailwindDatepicker from "vue-tailwind-datepicker";
+
+const dateValue = ref([]);
+const formatter = ref({
+    date: 'YYYY-MM-DD',
+    month: 'MM',
+})
 
 // 定义单个视光记录的接口
 interface OptometryRecord {
@@ -62,6 +69,8 @@ const formatDate = (dateString: string): string => {
 const isMultiSelect = ref(false);
 // 单选模式下是否有条目被选中
 const isSingleSelect = ref(false);
+const pressTimer = ref<number | null>(null); // 长按计时器
+const isLongPress = ref(false); // 是否为长按行为
 
 // 切换多选模式
 const toggleMultiSelect = () => {
@@ -94,6 +103,37 @@ const toggleSingleSelect = (index: number) => {
 const toggleRowSelection = (index: number) => {
     patientData.value[index].selected = !patientData.value[index].selected;
 };
+
+// 长按相关逻辑
+const startPressTimer = (index: number) => { // 新增代码
+    clearPressTimer(); // 确保没有残留计时器
+    isLongPress.value = false;
+
+    pressTimer.value = window.setTimeout(() => {
+        isLongPress.value = true; // 长按触发
+        console.log(`Row ${index} long-pressed`); // 长按行为
+    }, 500); // 设置为 500ms 触发长按
+};
+
+const endPressTimer = (index: number) => { // 新增代码
+    if (!isLongPress.value) {
+        clearPressTimer();
+    }
+};
+
+const clearPressTimer = () => { // 新增代码
+    if (pressTimer.value) {
+        clearTimeout(pressTimer.value);
+        pressTimer.value = null;
+    }
+};
+
+// 双击逻辑
+// const handleDoubleClick = (index: number) => { // 新增代码
+//     console.log(`Row ${index} double-clicked`);
+//     clearPressTimer(); // 确保清除计时器
+// };
+
 // 单击复选框处理（防止双击和手动选中冲突）
 const onCheckboxChange = (index: number, checked: boolean) => {
     patientData.value[index].selected = checked;
@@ -105,6 +145,19 @@ const toggleAll = (event: Event) => {
     patientData.value.forEach(row => {
         row.selected = checked;
     });
+};
+
+// 单击逻辑
+const handleClick = (index: number) => { // 修改：封装单击逻辑
+    if (isLongPress.value) {
+        // 如果是长按触发，阻止单击逻辑
+        return;
+    }
+    if (isMultiSelect.value) {
+        toggleRowSelection(index); // 多选模式下切换选中状态
+    } else {
+        toggleSingleSelect(index); // 单选模式下切换选中状态
+    }
 };
 
 // fetchData函数负责从API获取数据，并更新patientData的值
@@ -319,7 +372,7 @@ const setActiveTab = (tabId: string) => {
     <Head title="视光门诊" />
 
     <AuthenticatedLayout class="overflow-hidden h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex">
             <ul class="menu menu-xs lg:menu-horizontal pl-12">
                 <li><a
                     :class="{ 'bg-blue-500 text-white hover:bg-blue-500': isMultiSelect}"
@@ -331,6 +384,26 @@ const setActiveTab = (tabId: string) => {
                 <li><a @click="toggleShowFinish">{{ showFinish ? '隐藏诊毕' : '显示诊毕' }}</a></li>
                 <li><a @click="toggleShowErbao">{{ showErbao ? '隐藏儿保挂号' : '显示儿保挂号' }}</a></li>
             </ul>
+            <div class="w-32 pt-1.5">
+                <vue-tailwind-datepicker
+                    v-model="dateValue"
+                    as-single
+                    :formatter="formatter"
+                    i18n="zh-cn"
+                    input-classes="py-1 relative block w-full opacity-100
+                    rounded-lg overflow-hidden
+                    border-solid text-xs text-vtd-secondary-700
+                    placeholder-vtd-secondary-400 transition-colors
+                    bg-white border border-vtd-secondary-300
+                    focus:border-vtd-primary-300 focus:ring
+                    focus:ring-vtd-primary-500 focus:ring-opacity-10
+                    focus:outline-none dark:bg-vtd-secondary-800
+                    dark:border-vtd-secondary-700 dark:text-vtd-secondary-100
+                    dark:placeholder-vtd-secondary-500 dark:focus:border-vtd-primary-500
+                    dark:focus:ring-opacity-20"
+                    placeholder="选择挂号日期"
+                />
+            </div>
         </div>
 
         <div
@@ -384,7 +457,10 @@ const setActiveTab = (tabId: string) => {
                                 v-for="(patient, index) in patientData"
                                 :key="patient.opcId"
                                 v-show="patient.state !== '3'||showFinish"
-                                @click="isMultiSelect ? toggleRowSelection(index) : toggleSingleSelect(index)"
+                                @mousedown="startPressTimer(index)"
+                                @mouseup="endPressTimer(index)"
+                                @mouseleave="clearPressTimer"
+                                @click="handleClick(index)"
                                 :class="{
                                         'bg-blue-500 text-white': patient.selected,
                                         'hover': !patient.selected,
@@ -601,5 +677,8 @@ const setActiveTab = (tabId: string) => {
     </AuthenticatedLayout>
 </template>
 <style scoped>
-
+::v-deep(.vtd-datepicker) {
+    /* 修改样式 */
+    width: 338px;
+}
 </style>
