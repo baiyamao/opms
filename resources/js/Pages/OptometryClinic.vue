@@ -111,7 +111,7 @@ const startPressTimer = (index: number) => { // 新增代码
 
     pressTimer.value = window.setTimeout(() => {
         isLongPress.value = true; // 长按触发
-        console.log(`Row ${index} long-pressed`); // 长按行为
+        // console.log(`Row ${index} long-pressed`); // 长按行为
     }, 500); // 设置为 500ms 触发长按
 };
 
