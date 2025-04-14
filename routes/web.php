@@ -23,7 +23,11 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-})->middleware(['auth', 'verified']);
+});//->middleware(['auth', 'verified'])暂时移除首页登录
+
+Route::get('/chat', function () {
+    return Inertia::render('Chat');
+})->name('chat');
 
 Route::get('/optometry-clinic', function () {
     return Inertia::render('OptometryClinic');
