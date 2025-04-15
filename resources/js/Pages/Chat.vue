@@ -31,6 +31,6 @@ onMounted(() => {
     height: 30px;  /* 根据实际需要调整高度 */
     background-color: #f9f9fb; /* 或者使用页面背景色 */
     z-index: 9999999999; /* 确保遮罩层位于最上层 */
-    //pointer-events: none; /* 允许点击事件穿透遮罩层 */
+    /*pointer-events: none;  允许点击事件穿透遮罩层 */
 }
 </style>
