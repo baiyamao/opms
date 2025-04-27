@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FindHuZhouFuYouRecordByRegisterRecordController;
+use App\Http\Controllers\FindOptometryRecordByMicronautAPIController;
 use App\Http\Controllers\FindOptometryRecordByRegisterRecordController;
 use App\Http\Controllers\OptometryRecordController;
 use App\Http\Controllers\SystemAccountController;
@@ -40,4 +41,6 @@ Route::post('/wdhis-login', [FindOptometryRecordByRegisterRecordController::clas
 Route::post('/get-register-list-with-optometry-record', [FindOptometryRecordByRegisterRecordController::class, 'getRegisterListWithOption']);
 Route::post('/get-system-account', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'systemAccount']);
 Route::post('/get-hu-zhou-fu-you-record', [FindHuZhouFuYouRecordByRegisterRecordController::class, 'findProfileWithInfo']);
+Route::post('/get-register-list-by-date', [FindOptometryRecordByMicronautAPIController::class, 'getRegisterListByDate']);
+Route::post('/search-single-register-info-by-charge-no', [FindOptometryRecordByMicronautAPIController::class, 'searchSingleRegisterInfoByChargeNo']);
 
