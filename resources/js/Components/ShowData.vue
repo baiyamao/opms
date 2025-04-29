@@ -10,7 +10,7 @@ interface Patient {
     addr: string;
     idCard: string;
     regName: string;
-    mZSJ: string;
+    mzsj: string;
     patRegTime: string;
     patClass: string;
     telePhone: string;
@@ -19,7 +19,7 @@ interface Patient {
 // 定义字段映射的类型
 const fieldMap: Record<keyof Patient, string> = {
     regName: "挂号科室",
-    mZSJ: "序号",
+    mzsj: "序号",
     patName: "患者姓名",
     age: "年龄",
     patRegTime: "挂号时间",

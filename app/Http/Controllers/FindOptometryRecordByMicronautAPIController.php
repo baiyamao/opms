@@ -19,10 +19,9 @@ class FindOptometryRecordByMicronautAPIController extends Controller
         if ($showRegDate) {
             // 目标 URL
             //%2C2020005->儿保 %2C2020011->专家免费
-            // 使用带儿保的 URL
+
             $url = "http://10.172.24.108:8080/registrations?regDate=$showRegDate";
         } else {
-            // 使用默认不含儿保的 URL
             $url = 'http://10.172.24.108:8080/registrations';
         }
 

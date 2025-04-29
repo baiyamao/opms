@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import {ref, onMounted, onUnmounted, computed} from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { getRandomIV, encryptAES } from '@/utils/crypto-aes';
 import ShowData from "@/Components/ShowData.vue";
 import VueTailwindDatepicker from "vue-tailwind-datepicker";
+import dayjs from 'dayjs'
 
-const dateValue = ref([]);
-const formatter = ref({
-    date: 'YYYY-MM-DD',
-    month: 'MM',
-})
+
 
 // 定义单个视光记录的接口
 interface OptometryRecord {
@@ -25,13 +22,14 @@ interface OptometryRecord {
 interface Patient {
     opcId: string;
     patRegTime: string; // 挂号时间
-    mZSJ: string;       // 序号（假设为某种标识符）
-    regName: string;    // 类别
+    mzsj: string;       // 序号（假设为某种标识符）
+    regName: string;    // 科室
     state: string;      // 状态
     optometry_record: OptometryRecord[]; // 视光档案数组
     patName: string;    // 挂号姓名
     sex: number;        // 性别
     age: string;        // 年龄
+    dateOfBirth: string // 生日
     cardData: string;   // 就诊ID
     telePhone: string;  // 挂号电话
     info_check:string;//一致性检查
@@ -42,10 +40,28 @@ interface Patient {
     // ...根据实际需求添加其他属性
 }
 
+const dateValue = ref([]);
+const formatter = ref({
+    date: 'YYYYMMDD',
+    month: 'MM',
+})
+
+function onDateSelect() {
+    // 立即拉取数据
+    fetchData()
+}
+
 
 const patientData = ref<Patient[]>([]);
 const showErbao = ref<boolean>(false); // 控制是否显示儿保挂号
 const showFinish = ref<boolean>(true); // 控制是否显示诊毕
+
+
+// 切换显示诊毕
+function toggleShowFinish() {
+    showFinish.value = !showFinish.value;
+    fetchData(); // 每次切换后重新获取数据
+}
 
 // 切换显示儿保挂号
 function toggleShowErbao() {
@@ -53,10 +69,46 @@ function toggleShowErbao() {
     fetchData(); // 每次切换后重新获取数据
 }
 
-// 切换显示诊毕
-function toggleShowFinish() {
-    showFinish.value = !showFinish.value;
-    fetchData(); // 每次切换后重新获取数据
+const activePatients = computed(() =>{
+    // 基准日期从外部或直接硬编码，都可以灵活替换
+    const asOfStr = dayjs().format('YYYYMMDD')
+
+    return patientData.value
+        .filter(p => showErbao.value || p.regName !== '儿保')
+        // .filter(p => p.regName !== '诊毕')  // 若还需要排除“诊毕”
+        .map(p => {
+            // 计算并赋值
+            p.age = calcAge(p.dateOfBirth, asOfStr)
+            return p
+        })
+
+})
+
+/**
+ * 计算从出生日期到指定“当前日期”之间的岁/月/天
+ * @param dobStr 生日，格式 "YYYY-MM-DD HH:mm:ss"
+ * @param asOfStr 计算基准日期，格式 "YYYYMMDD"，如 "20250405"
+ */
+function calcAge(dobStr: string, asOfStr: string): string {
+    const dob = dayjs(dobStr, 'YYYY-MM-DD HH:mm:ss')
+    const asOf = dayjs(asOfStr, 'YYYYMMDD')
+
+    let years = asOf.diff(dob, 'year')
+    const afterYears = dob.add(years, 'year')
+
+    let months = asOf.diff(afterYears, 'month')
+    const afterMonths = afterYears.add(months, 'month')
+
+    let days = asOf.diff(afterMonths, 'day')
+
+    const parts = []
+    if (years > 0) parts.push(`${years}岁`)
+    if (months > 0) parts.push(`${months}月`)
+    if (days > 0) parts.push(`${days}天`)
+    // 若都为 0，表示当天生日
+    if (parts.length === 0) parts.push('0天')
+
+    return parts.join('')
 }
 
 const formatDate = (dateString: string): string => {
@@ -79,7 +131,7 @@ const toggleMultiSelect = () => {
 
     // 如果退出多选模式，清除所有选中状态
     if (!isMultiSelect.value) {
-        patientData.value.forEach(row => (row.selected = false));
+        activePatients.value.forEach(row => (row.selected = false));
         isSingleSelect.value = false;
     }
 };
@@ -89,11 +141,11 @@ const selectedRowIndex = ref<number | null>(null);
 
 // 单选模式下单击行
 const toggleSingleSelect = (index: number) => {
-    if(patientData.value[index].selected){//再次单击取消选择
-        patientData.value[index].selected = !patientData.value[index].selected;
+    if(activePatients.value[index].selected){//再次单击取消选择
+        activePatients.value[index].selected = !activePatients.value[index].selected;
         isSingleSelect.value = false;
     }else{
-        patientData.value.forEach((row, i) => (row.selected = i === index));
+        activePatients.value.forEach((row, i) => (row.selected = i === index));
         isSingleSelect.value = true;
     }
 
@@ -101,7 +153,7 @@ const toggleSingleSelect = (index: number) => {
 
 // 多选模式下切换选中状态
 const toggleRowSelection = (index: number) => {
-    patientData.value[index].selected = !patientData.value[index].selected;
+    activePatients.value[index].selected = !activePatients.value[index].selected;
 };
 
 // 长按相关逻辑
@@ -136,13 +188,13 @@ const clearPressTimer = () => { // 新增代码
 
 // 单击复选框处理（防止双击和手动选中冲突）
 const onCheckboxChange = (index: number, checked: boolean) => {
-    patientData.value[index].selected = checked;
+    activePatients.value[index].selected = checked;
 };
 
 //全选和取消全选
 const toggleAll = (event: Event) => {
     const checked = (event.target as HTMLInputElement).checked;
-    patientData.value.forEach(row => {
+    activePatients.value.forEach(row => {
         row.selected = checked;
     });
 };
@@ -163,8 +215,9 @@ const handleClick = (index: number) => { // 修改：封装单击逻辑
 // fetchData函数负责从API获取数据，并更新patientData的值
 async function fetchData() {
     try {
-        const response = await axios.post('/api/get-register-list-with-optometry-record',{
-            showErbao: showErbao.value,
+        const response = await axios.post('/api/get-register-list-by-date',{
+            // showErbao: showErbao.value,
+            regDate:dateValue.value[0]
         });
 
         if (response.data && Array.isArray(response.data)) {
@@ -390,6 +443,7 @@ const setActiveTab = (tabId: string) => {
                     as-single
                     :formatter="formatter"
                     i18n="zh-cn"
+                    @update:model-value="onDateSelect"
                     input-classes="py-1 relative block w-full opacity-100
                     rounded-lg overflow-hidden
                     border-solid text-xs text-vtd-secondary-700
@@ -454,7 +508,7 @@ const setActiveTab = (tabId: string) => {
                             </thead>
                             <tbody>
                             <tr
-                                v-for="(patient, index) in patientData"
+                                v-for="(patient, index) in activePatients"
                                 :key="patient.opcId"
                                 v-show="patient.state !== '3'||showFinish"
                                 @mousedown="startPressTimer(index)"
@@ -476,7 +530,7 @@ const setActiveTab = (tabId: string) => {
                                                @change="onCheckboxChange(index, patient.selected)"/>
                                     </label>
                                 </th>
-                                <td>{{ patient.mZSJ }}</td>
+                                <td>{{ patient.mzsj }}</td>
                                 <td>{{ patient.regName }}</td>
                                 <td :class="patient.state === '1' ? 'bg-red-400' : (patient.state === '3' ? '' : 'bg-green-400')">
                                     {{ patient.state === '1' ? '诊中' : (patient.state === '3' ? '诊毕' : '待诊') }}
@@ -608,7 +662,7 @@ const setActiveTab = (tabId: string) => {
                                         tabindex="0"
                                         class="dropdown-content card card-compact bg-primary text-primary-content z-[1] w-96 p-2 shadow">
                                         <div class="card-body">
-                                            <ShowData :data="patientData.filter((patient) => patient.selected)"/>
+                                            <ShowData :data="activePatients.filter((patient) => patient.selected)"/>
                                         </div>
                                     </div>
                                 </div>
