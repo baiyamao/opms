@@ -27,7 +27,7 @@ interface Patient {
     state: string;      // 状态
     optometry_record: OptometryRecord[]; // 视光档案数组
     patName: string;    // 挂号姓名
-    sex: number;        // 性别
+    sex: string;        // 性别
     age: string;        // 年龄
     dateOfBirth: string // 生日
     cardData: string;   // 就诊ID
@@ -581,7 +581,7 @@ const setActiveTab = (tabId: string) => {
                                     </div>
                                 </td>
                                 <td>{{ patient.patName }}</td>
-                                <td v-if="!isSingleSelect">{{ patient.sex === 1 ? '男' : '女' }}</td>
+                                <td v-if="!isSingleSelect">{{ patient.sex === '1' ? '男' : '女' }}</td>
                                 <td v-if="!isSingleSelect">{{ patient.age }}</td>
                                 <td v-if="!isSingleSelect">{{ patient.cardData }}</td>
                                 <td v-if="!isSingleSelect">{{ formatDate(patient.patRegTime) }}</td>
