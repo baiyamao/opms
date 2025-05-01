@@ -84,6 +84,9 @@ const activePatients = computed(() =>{
 
 })
 
+// 获取当前日期，并格式化为 YYYYMMDD
+const todayString = dayjs().format('YYYYMMDD');
+
 /**
  * 计算从出生日期到指定“当前日期”之间的岁/月/天
  * @param dobStr 生日，格式 "YYYY-MM-DD HH:mm:ss"
@@ -217,7 +220,7 @@ async function fetchData() {
     try {
         const response = await axios.post('/api/get-register-list-by-date',{
             // showErbao: showErbao.value,
-            regDate:dateValue.value[0]
+            regDate:dateValue.value[0] || todayString
         });
 
         if (response.data && Array.isArray(response.data)) {
