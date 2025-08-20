@@ -10,6 +10,8 @@ import RadioGroup from "@/Components/RadioGroup.vue";
 import LoadingSpinner from "@/Components/LoadingSpinner.vue"
 import DangerButton from "@/Components/DangerButton.vue";
 import GrowthStandardsTable from "@/Components/GrowthStandardsTable.vue";
+// 引入 child-growth-eval
+import { evaluateGrowth, type GrowthEvaluationResult } from "child-growth-eval";
 
 type ResponseDataType = {
     age_in_months?: number;
@@ -55,11 +57,11 @@ const resetForm=()=>{
 
 const loadExample=()=>{
     growthData.value={
-        birthday:'2020-03-03',
+        birthday:'2024-02-03',
         gender:'boy',
         height_type:'',
-        height:'100',
-        weight:'25'
+        height:'83',
+        weight:'12'
     };
 
 }
@@ -125,26 +127,38 @@ const heightOptions = [
     {label: '身高', value: 'height'},
 ];
 
-const responseData = ref<ResponseDataType | null>(null);
+export interface ExtendedGrowthEvaluationResult extends GrowthEvaluationResult {
+    ageInMonths?: number; // 新增属性
+    heightType?: "length" | "height";
+}
+const responseData = ref<ExtendedGrowthEvaluationResult | null>(null);
 
+// 🔥 直接调用 child-growth-eval 而不是 axios
 const submit = async () => {
-    loading.value=true;
-    hasError.value=false;
-    growthData.value.birthday=normalizeDateStr(growthData.value.birthday);
-        try {
-            const response = await axios.post('/api/evaluate-growth', growthData.value);
-            responseData.value = response.data;
-            loading.value=false;
-            // 在这里可以处理成功提交的响应数据
-        } catch (error) {
-            console.error('Error submitting data:', error);
-            loading.value=false;
-            hasError.value=true;
-            message.value=(error as any).response.data.error;
-            // 在这里可以处理请求失败的情况
-        }
+    loading.value = true;
+    hasError.value = false;
+    try {
+        responseData.value = evaluateGrowth({
+            ageInMonths: ageInMonths.value,
+            gender: growthData.value.gender as "boy" | "girl",
+            heightType: growthData.value.height_type as "length" | "height",
+            height: parseFloat(growthData.value.height),
+            weight: parseFloat(growthData.value.weight)
+        });
+        if (responseData.value) {
+            responseData.value['ageInMonths'] = ageInMonths.value;
+            responseData.value['heightType'] = growthData.value.height_type as "length" | "height";
 
+        }
+        loading.value = false;
+    } catch (error: unknown) {
+        console.error("Error evaluating growth:", error);
+        loading.value = false;
+        hasError.value = true;
+        message.value = error instanceof Error ? error.message : "未知错误";
+    }
 };
+
 </script>
 
 <template>
@@ -231,7 +245,7 @@ const submit = async () => {
         <div class="absolute grid-cols-1 grid w-full justify-items-center py-2">
             <LoadingSpinner v-if="loading"></LoadingSpinner>
             <span v-if="hasError" class="text-red-600">{{message}}</span>
-            <span v-if="responseData && !responseData.height_weight_standards" class="text-blue-600">注意：提供的身长身高值超出身高别体重数据范围！</span>
+            <span v-if="responseData && !responseData.heightWeightStandard" class="text-blue-600">注意：提供的身长身高值超出身高别体重数据范围！</span>
         </div>
         <div v-if="responseData" class="flex flex-col items-center mt-10 p-5 border rounded-lg shadow-md bg-white">
             <div class="text-2xl font-semibold mb-4">生长发育评价结果</div>
@@ -239,22 +253,22 @@ const submit = async () => {
                 <tbody>
                 <tr class="border-b">
                     <td class="p-2 font-bold">年龄</td>
-                    <td class="p-2">{{Math.floor((responseData?.age_in_months || 0) / 12)}}岁{{(responseData?.age_in_months || 0)%12}}个月</td>
+                    <td class="p-2">{{Math.floor((responseData?.ageInMonths || 0) / 12)}}岁{{(responseData?.ageInMonths || 0)%12}}个月</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">体重评价</td>
-                    <td class="p-2">{{responseData.weight_evaluation}}</td>
-                    <td class="p-2 text-red-600">{{responseData.nutrition_weight_evaluation}}</td>
+                    <td class="p-2">{{responseData.weightEvaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition.weight}}</td>
                 </tr>
                 <tr class="border-b">
-                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长":"身高"}}评价</td>
-                    <td class="p-2">{{responseData.height_evaluation}}</td>
-                    <td class="p-2 text-red-600">{{responseData.nutrition_height_evaluation}}</td>
+                    <td class="p-2 font-bold">{{(responseData.heightType==="length")?"身长":"身高"}}评价</td>
+                    <td class="p-2">{{responseData.heightEvaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition.height}}</td>
                 </tr>
                 <tr class="border-b">
-                    <td class="p-2 font-bold">{{(responseData.standards?.height_type==="length")?"身长别体重":"身高别体重"}}评价</td>
-                    <td class="p-2">{{responseData.height_weight_evaluation}}</td>
-                    <td class="p-2 text-red-600">{{responseData.nutrition_height_weight_evaluation}}</td>
+                    <td class="p-2 font-bold">{{(responseData.heightType==="length")?"身长别体重":"身高别体重"}}评价</td>
+                    <td class="p-2">{{responseData.heightWeightEvaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition.heightWeight}}</td>
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">BMI</td>
@@ -262,12 +276,12 @@ const submit = async () => {
                 </tr>
                 <tr class="border-b">
                     <td class="p-2 font-bold">BMI评价</td>
-                    <td class="p-2">{{responseData.bmi_evaluation}}</td>
-                    <td class="p-2 text-red-600">{{responseData.nutrition_bmi_evaluation}}</td>
+                    <td class="p-2">{{responseData.bmiEvaluation}}</td>
+                    <td class="p-2 text-red-600">{{responseData.nutrition.bmi}}</td>
                 </tr>
                 </tbody>
             </table>
-            <GrowthStandardsTable :data="responseData.standards" :height-weight-data="responseData.height_weight_standards" v-if="responseData"
+            <GrowthStandardsTable :data="responseData.standard" :height-weight-data="responseData.heightWeightStandard" v-if="responseData"
                                   class="mt-2"/>
         </div>
 

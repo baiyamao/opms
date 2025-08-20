@@ -24,5 +24,8 @@
         "vue": "^3.2.41",
         "vue-tailwind-datepicker": "^1.7.3",
         "vue-tsc": "^1.2.0"
+    },
+    "dependencies": {
+        "child-growth-eval": "^1.0.5"
     }
 }
