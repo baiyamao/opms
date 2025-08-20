@@ -12,6 +12,11 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
+        // **页面渲染前设置 token**
+        const token = localStorage.getItem('api_token');
+        if (token) {
+            window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue, Ziggy)

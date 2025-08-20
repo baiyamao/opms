@@ -217,6 +217,10 @@ const handleClick = (index: number) => { // 修改：封装单击逻辑
 
 // fetchData函数负责从API获取数据，并更新patientData的值
 async function fetchData() {
+    // 确保 Token 存在
+    if (!localStorage.getItem('api_token')) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // 等待 Token 初始化
+    }
     try {
         const response = await axios.post('/api/get-register-list-by-date',{
             // showErbao: showErbao.value,
@@ -301,6 +305,10 @@ interface SystemAccount {
 
 // 获取huzhoufuyou系统账号密码
 async function fetchSystemAccount(): Promise<SystemAccount | null> {
+    // 确保 Token 存在
+    if (!localStorage.getItem('api_token')) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // 等待 Token 初始化
+    }
     try {
         const response = await axios.post('/api/get-system-account');
 

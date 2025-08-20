@@ -6,6 +6,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { apiLogin } from '@/utils/apiAuth';
 
 defineProps<{
     canResetPassword?: boolean;
@@ -19,9 +20,22 @@ const form = useForm({
 });
 
 const submit = () => {
+    // 1. 使用 Inertia 登录（Session 登录，用于网页跳转）
     form.post(route('login'), {
-        onFinish: () => {
-            form.reset('password');
+        onFinish: async () => {
+
+            try {
+                // 先用原始密码登录 API
+                const user = await apiLogin(form.email, form.password);
+
+                // console.log('API Token 登录成功', user);
+
+                // 成功后再清空表单密码
+                form.reset('password');
+            } catch (error) {
+                // console.error('API Token 登录失败', error);
+            }
+
         },
     });
 };
