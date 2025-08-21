@@ -42,10 +42,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // 删除当前用户的当前 token（如果是 API 请求的话）
+        if ($request->user() && $request->bearerToken()) {
+            $request->user()
+                ->tokens()
+                ->where('id', explode('|', $request->bearerToken())[0])
+                ->delete();
+        }
+
+        // 登出 web guard
         Auth::guard('web')->logout();
 
+        // 清理 session
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

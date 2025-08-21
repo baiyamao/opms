@@ -6,8 +6,13 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import { apiLogout } from "@/utils/apiAuth";
 
 const showingNavigationDropdown = ref(false);
+
+const logout = () => {
+    apiLogout();
+};
 </script>
 
 <template>
@@ -72,7 +77,7 @@ const showingNavigationDropdown = ref(false);
                                     <template #content>
                                         <DropdownLink :href="route('profile.edit')"> 个人资料 </DropdownLink>
                                         <DropdownLink :href="route('system-accounts')"> 系统账号设置 </DropdownLink>
-                                        <DropdownLink :href="route('logout')" method="post" as="button">
+                                        <DropdownLink as="button" @click="logout">
                                             退出登录
                                         </DropdownLink>
                                     </template>
@@ -140,9 +145,9 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
-                            <ResponsiveNavLink :href="route('logout')" method="post" as="button">
-                                Log Out
+                            <ResponsiveNavLink :href="route('profile.edit')"> 个人资料 </ResponsiveNavLink>
+                            <ResponsiveNavLink as="button" @click="logout">
+                                退出登录
                             </ResponsiveNavLink>
                         </div>
                     </div>
