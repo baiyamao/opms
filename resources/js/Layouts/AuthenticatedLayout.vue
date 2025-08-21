@@ -77,7 +77,7 @@ const logout = () => {
                                     <template #content>
                                         <DropdownLink :href="route('profile.edit')"> 个人资料 </DropdownLink>
                                         <DropdownLink :href="route('system-accounts')"> 系统账号设置 </DropdownLink>
-                                        <DropdownLink as="button" @click="logout">
+                                        <DropdownLink href="#" as="button" @click.prevent="logout">
                                             退出登录
                                         </DropdownLink>
                                     </template>
@@ -146,7 +146,7 @@ const logout = () => {
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')"> 个人资料 </ResponsiveNavLink>
-                            <ResponsiveNavLink as="button" @click="logout">
+                            <ResponsiveNavLink href="#" as="button" @click.prevent="logout">
                                 退出登录
                             </ResponsiveNavLink>
                         </div>
