@@ -11,7 +11,8 @@ import LoadingSpinner from "@/Components/LoadingSpinner.vue"
 import DangerButton from "@/Components/DangerButton.vue";
 import GrowthStandardsTable from "@/Components/GrowthStandardsTable.vue";
 // 引入 child-growth-eval
-import { evaluateGrowth, type GrowthEvaluationResult } from "child-growth-eval";
+import type { HeightType, GrowthEvaluationResult } from "child-growth-eval";
+import { evaluateGrowth } from "child-growth-eval";
 
 // ⬇️ 新增
 import * as XLSX from "xlsx";
@@ -284,12 +285,23 @@ const processBatchData = (dataRows: any[][]) => {
         const heightType = judgeHeightType(ageInMonths);
         if (ageInMonths === 24) has24MonthChild = true;
 
+        if (has24MonthChild) {
+            alert("⚠️ 注意：发现月龄 = 24 的儿童，系统已默认使用“身高”标准。");
+        }
+
         const gender = genderZh === "男" ? "boy" : "girl";
+
+        let finalHeightType: HeightType;
+        if (!heightType) {
+            finalHeightType = ageInMonths < 24 ? "length" : "height";
+        } else {
+            finalHeightType = heightType as HeightType;
+        }
 
         const result = evaluateGrowth({
             ageInMonths,
             gender,
-            heightType: heightType || "height",
+            heightType: finalHeightType,
             height: parseFloat(heightStr),
             weight: parseFloat(weightStr),
         });
@@ -339,9 +351,7 @@ const processBatchData = (dataRows: any[][]) => {
     XLSX.utils.book_append_sheet(wb, ws, "评价结果");
     XLSX.writeFile(wb, "生长发育评估结果.xlsx");
 
-    if (has24MonthChild) {
-        alert("⚠️ 注意：发现月龄 = 24 的儿童，系统已默认使用“身高”标准。");
-    }
+
 };
 
 
