@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "@inertiajs/inertia": "^0.11.1",
-        "child-growth-eval": "^1.0.5"
+        "child-growth-eval": "^1.0.5",
+        "xlsx": "^0.18.5"
     }
 }
