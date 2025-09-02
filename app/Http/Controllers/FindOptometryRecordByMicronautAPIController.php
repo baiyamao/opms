@@ -20,9 +20,9 @@ class FindOptometryRecordByMicronautAPIController extends Controller
             // 目标 URL
             //%2C2020005->儿保 %2C2020011->专家免费
 
-            $url = "http://10.172.24.108:8080/registrations?regDate=$showRegDate";
+            $url = "http://10.172.151.159:8080/registrations?regDate=$showRegDate";
         } else {
-            $url = 'http://10.172.24.108:8080/registrations';
+            $url = 'http://10.172.151.159:8080/registrations';
         }
 
         return $this->getRegisterList($url);
@@ -38,7 +38,7 @@ class FindOptometryRecordByMicronautAPIController extends Controller
             // 目标 URL
             //%2C2020005->儿保 %2C2020011->专家免费
             // 使用带儿保的 URL
-            $url = "http://10.172.24.108:8080/registrations?chargeNo=$showChargeNo";
+            $url = "http://10.172.151.159:8080/registrations?chargeNo=$showChargeNo";
         } else {
             return response()->json(['message' => '未提供chargeNo参数'], 500);
         }
